@@ -9,15 +9,45 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TrendingRouteImport } from './routes/trending'
+import { Route as SupportRouteImport } from './routes/support'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RequestProductRouteImport } from './routes/request-product'
+import { Route as ProductsRouteImport } from './routes/products'
+import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HowToOrderRouteImport } from './routes/how-to-order'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TrendingRoute = TrendingRouteImport.update({
+  id: '/trending',
+  path: '/trending',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequestProductRoute = RequestProductRouteImport.update({
+  id: '/request-product',
+  path: '/request-product',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProductsRoute = ProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrdersRoute = OrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -46,14 +76,24 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/how-to-order': typeof HowToOrderRoute
   '/login': typeof LoginRoute
+  '/orders': typeof OrdersRoute
+  '/products': typeof ProductsRoute
+  '/request-product': typeof RequestProductRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/support': typeof SupportRoute
+  '/trending': typeof TrendingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/how-to-order': typeof HowToOrderRoute
   '/login': typeof LoginRoute
+  '/orders': typeof OrdersRoute
+  '/products': typeof ProductsRoute
+  '/request-product': typeof RequestProductRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/support': typeof SupportRoute
+  '/trending': typeof TrendingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -61,20 +101,50 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/how-to-order': typeof HowToOrderRoute
   '/login': typeof LoginRoute
+  '/orders': typeof OrdersRoute
+  '/products': typeof ProductsRoute
+  '/request-product': typeof RequestProductRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/support': typeof SupportRoute
+  '/trending': typeof TrendingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/how-to-order' | '/login' | '/sitemap.xml'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/how-to-order'
+    | '/login'
+    | '/orders'
+    | '/products'
+    | '/request-product'
+    | '/sitemap.xml'
+    | '/support'
+    | '/trending'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/how-to-order' | '/login' | '/sitemap.xml'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/how-to-order'
+    | '/login'
+    | '/orders'
+    | '/products'
+    | '/request-product'
+    | '/sitemap.xml'
+    | '/support'
+    | '/trending'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/how-to-order'
     | '/login'
+    | '/orders'
+    | '/products'
+    | '/request-product'
     | '/sitemap.xml'
+    | '/support'
+    | '/trending'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -82,16 +152,56 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   HowToOrderRoute: typeof HowToOrderRoute
   LoginRoute: typeof LoginRoute
+  OrdersRoute: typeof OrdersRoute
+  ProductsRoute: typeof ProductsRoute
+  RequestProductRoute: typeof RequestProductRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SupportRoute: typeof SupportRoute
+  TrendingRoute: typeof TrendingRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/trending': {
+      id: '/trending'
+      path: '/trending'
+      fullPath: '/trending'
+      preLoaderRoute: typeof TrendingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/request-product': {
+      id: '/request-product'
+      path: '/request-product'
+      fullPath: '/request-product'
+      preLoaderRoute: typeof RequestProductRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/products': {
+      id: '/products'
+      path: '/products'
+      fullPath: '/products'
+      preLoaderRoute: typeof ProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orders': {
+      id: '/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof OrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -130,7 +240,12 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   HowToOrderRoute: HowToOrderRoute,
   LoginRoute: LoginRoute,
+  OrdersRoute: OrdersRoute,
+  ProductsRoute: ProductsRoute,
+  RequestProductRoute: RequestProductRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SupportRoute: SupportRoute,
+  TrendingRoute: TrendingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

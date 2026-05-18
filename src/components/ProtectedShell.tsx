@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { Navbar } from "./Navbar";
+import { MemberShell } from "./MemberSidebar";
 
 export function ProtectedShell({ children }: { children: ReactNode }) {
   const { session, loading } = useAuth();
@@ -19,10 +19,5 @@ export function ProtectedShell({ children }: { children: ReactNode }) {
     );
   }
 
-  return (
-    <div className="min-h-screen">
-      <Navbar />
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>
-    </div>
-  );
+  return <MemberShell>{children}</MemberShell>;
 }
