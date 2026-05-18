@@ -6,12 +6,14 @@ import { PublicNavbar } from "@/components/PublicNavbar";
 import { StarRatingPills, TrendingSection } from "@/components/landing/Trending";
 import { SalesPanel, FulfilmentPanel } from "@/components/landing/DashboardPreviews";
 
+export const CHECKOUT_URL = "https://byjbdf-2k.myshopify.com/checkouts/cn/hWNCJl4hotDQ0n05xDu8oPnG/en-za?_r=AQABy_sDJ4mXBCFU5a7Bai_NPknqBl197qdTJdb9mCUKjEM&preview_theme_id=188057157949";
+
 export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
       { title: "The Products Behind Every Winning SA Dropshipping Store" },
-      { name: "description", content: "Private supplier portal for South African dropshippers. Hand-picked products, real margins, 2-5 day local delivery. R99/month." },
+      { name: "description", content: "Private supplier portal for South African dropshippers. Hand-picked products, real margins, vetted SA suppliers. R99/month." },
       { property: "og:title", content: "The Products Behind Every Winning SA Dropshipping Store" },
       { property: "og:description", content: "Private supplier portal for South African dropshippers. R99/month, cancel anytime." },
     ],
@@ -46,11 +48,8 @@ function Hero() {
       <div className="relative mx-auto flex max-w-5xl flex-col items-center text-center fade-in-up">
         <StarRatingPills />
 
-        <div className="mt-5 flex items-center gap-2 rounded-full border border-[color:var(--border)] bg-[color:var(--card)] px-4 py-1.5 text-xs">
-          <span className="relative grid h-2 w-2 place-items-center">
-            <span className="absolute h-2 w-2 rounded-full pulse-dot" />
-            <span className="h-2 w-2 rounded-full bg-[color:var(--primary)]" />
-          </span>
+        <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] bg-[color:var(--card)] px-4 py-1.5 text-xs">
+          <span className="pulse-dot" aria-hidden />
           <span className="font-semibold uppercase tracking-wider text-white">
             Private Access · South Africa Only
           </span>
@@ -68,7 +67,7 @@ function Hero() {
           your South African customers.
         </p>
 
-        <a href="#pricing"
+        <a href={CHECKOUT_URL} target="_blank" rel="noreferrer"
           className="mt-10 inline-flex items-center gap-2 rounded-xl bg-[color:var(--primary)] px-6 py-3.5 text-base font-semibold text-[color:var(--primary-foreground)] transition-colors hover:bg-[color:var(--primary-hover)] glow-btn">
           Get Instant Access — R99/month
           <ArrowRight className="h-4 w-4" />
@@ -108,8 +107,8 @@ function StackSection() {
             stickyOffset="top-32"
             eyebrow="For Fulfilment"
             title="We ship it. You keep the profit."
-            description="Customer orders from your store. You send us the order. We ship direct to your customer in 2 to 5 days anywhere in South Africa. No stock. No warehouse. No stress."
-            tags={["2–5 day SA delivery", "No stock needed", "Live order tracking", "Auto-notifications"]}
+            description="Customer orders from your store. You send us the order. We ship direct to your customer anywhere in South Africa. No stock. No warehouse. No stress. Products sourced and validated specifically for the SA market."
+            tags={["Vetted SA suppliers", "No stock needed", "Live order tracking", "Auto-notifications"]}
             panel={<FulfilmentPanel />}
             reverse
           />
@@ -172,10 +171,10 @@ function StatsSection() {
     },
     {
       icon: <Truck className="h-5 w-5" />,
-      value: "2–5",
-      title: "Day delivery anywhere in SA",
-      body: "No AliExpress. No 6-week waits. No customers asking where their order is.",
-      pill: "Local fulfilment",
+      value: "100+",
+      title: "Vetted SA Products",
+      body: "Hand-picked products validated for the South African market. Real demand. Real margins.",
+      pill: "Updated weekly",
     },
   ];
 
@@ -229,7 +228,7 @@ function Pricing() {
     "Cost prices + suggested sell prices",
     "Ready-to-use product descriptions",
     "Pre-tested ad angles included",
-    "2–5 day delivery anywhere in SA",
+    "Products sourced and validated specifically for the SA market.",
     "Direct WhatsApp support",
     "Cancel anytime, no contracts",
   ];
@@ -271,7 +270,7 @@ function Pricing() {
               ))}
             </ul>
 
-            <a href="https://wa.me/27723979430" target="_blank" rel="noreferrer"
+            <a href={CHECKOUT_URL} target="_blank" rel="noreferrer"
               className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[color:var(--primary)] px-6 py-3.5 text-base font-semibold text-[color:var(--primary-foreground)] transition-colors hover:bg-[color:var(--primary-hover)] glow-btn">
               Get Instant Access
               <ArrowRight className="h-4 w-4" />
