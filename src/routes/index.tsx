@@ -6,6 +6,8 @@ import { PublicNavbar } from "@/components/PublicNavbar";
 import { StarRatingPills, TrendingSection } from "@/components/landing/Trending";
 import { SalesPanel, FulfilmentPanel } from "@/components/landing/DashboardPreviews";
 
+export const CHECKOUT_URL = "https://byjbdf-2k.myshopify.com/checkouts/cn/hWNCJl4hotDQ0n05xDu8oPnG/en-za?_r=AQABy_sDJ4mXBCFU5a7Bai_NPknqBl197qdTJdb9mCUKjEM&preview_theme_id=188057157949";
+
 export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
