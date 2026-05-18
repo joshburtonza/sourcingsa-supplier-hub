@@ -70,7 +70,9 @@ export function ProductBrowser({
     <div className="space-y-6">
       <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[color:var(--muted-foreground)]" />
+          <span className="pointer-events-none absolute left-3.5 top-1/2 grid h-4 w-4 -translate-y-1/2 place-items-center text-[color:var(--muted-foreground)]">
+            <SearchIcon />
+          </span>
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
