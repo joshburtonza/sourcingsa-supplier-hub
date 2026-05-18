@@ -107,8 +107,8 @@ function StackSection() {
             stickyOffset="top-32"
             eyebrow="For Fulfilment"
             title="We ship it. You keep the profit."
-            description="Customer orders from your store. You send us the order. We ship direct to your customer in 2 to 5 days anywhere in South Africa. No stock. No warehouse. No stress."
-            tags={["2–5 day SA delivery", "No stock needed", "Live order tracking", "Auto-notifications"]}
+            description="Customer orders from your store. You send us the order. We ship direct to your customer anywhere in South Africa. No stock. No warehouse. No stress. Products sourced and validated specifically for the SA market."
+            tags={["Vetted SA suppliers", "No stock needed", "Live order tracking", "Auto-notifications"]}
             panel={<FulfilmentPanel />}
             reverse
           />
