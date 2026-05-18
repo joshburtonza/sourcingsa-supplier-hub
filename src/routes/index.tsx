@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Search, Package, Tag, HeadphonesIcon, ExternalLink } from "lucide-react";
+import { Search, Package, Tag, Headphones, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProtectedShell } from "@/components/ProtectedShell";
 import { useAuth } from "@/hooks/use-auth";
@@ -106,7 +106,7 @@ function Dashboard() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat icon={<Package className="h-5 w-5" />} label="Total Products" value={products.length} />
         <Stat icon={<Tag className="h-5 w-5" />} label="Active Categories" value={activeCats} />
-        <Stat icon={<HeadphonesIcon className="h-5 w-5" />} label="Support" value="24/7" />
+        <Stat icon={<Headphones className="h-5 w-5" />} label="Support" value="24/7" />
       </div>
 
       <div className="relative">
