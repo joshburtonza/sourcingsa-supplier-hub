@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      orders: {
+        Row: {
+          amount: number
+          category: string | null
+          created_at: string
+          email: string
+          id: string
+          ordered_at: string
+          product_name: string
+          shopify_order_id: string | null
+          status: Database["public"]["Enums"]["order_status"]
+        }
+        Insert: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          ordered_at?: string
+          product_name: string
+          shopify_order_id?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+        }
+        Update: {
+          amount?: number
+          category?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          ordered_at?: string
+          product_name?: string
+          shopify_order_id?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string
@@ -22,8 +58,10 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          sales_count: number
           sell_price: number
           shopify_url: string
+          trending: boolean
         }
         Insert: {
           category: string
@@ -32,8 +70,10 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          sales_count?: number
           sell_price: number
           shopify_url: string
+          trending?: boolean
         }
         Update: {
           category?: string
@@ -42,8 +82,10 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          sales_count?: number
           sell_price?: number
           shopify_url?: string
+          trending?: boolean
         }
         Relationships: []
       }
@@ -76,7 +118,12 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      order_status:
+        | "unfulfilled"
+        | "processing"
+        | "in_transit"
+        | "delivered"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -203,6 +250,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      order_status: [
+        "unfulfilled",
+        "processing",
+        "in_transit",
+        "delivered",
+        "cancelled",
+      ],
+    },
   },
 } as const
