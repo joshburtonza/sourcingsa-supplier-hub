@@ -39,11 +39,11 @@ export function Navbar() {
     <header className="sticky top-0 z-40 border-b border-[color:var(--border)] bg-black/70 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-8">
-          <Link to="/">
+          <Link to="/dashboard">
             <Logo />
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
-            <Link to="/" className={linkCls(path === "/")}>
+            <Link to="/dashboard" className={linkCls(path === "/dashboard")}>
               Catalogue
             </Link>
             <Link to="/how-to-order" className={linkCls(path === "/how-to-order")}>
@@ -70,7 +70,7 @@ export function Navbar() {
       </div>
 
       <div className="flex items-center justify-center gap-6 border-t border-[color:var(--border)] py-2 md:hidden">
-        <Link to="/" className={linkCls(path === "/")}>Catalogue</Link>
+        <Link to="/dashboard" className={linkCls(path === "/dashboard")}>Catalogue</Link>
         <Link to="/how-to-order" className={linkCls(path === "/how-to-order")}>How to Order</Link>
       </div>
     </header>
