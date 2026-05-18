@@ -34,6 +34,9 @@ function categoryGradient(category: string): string {
     Baby: "linear-gradient(135deg, #0a2540 0%, #1e6fa8 100%)",
     "Men's Grooming": "linear-gradient(135deg, #1a1f29 0%, #3a4556 100%)",
     Jewellery: "linear-gradient(135deg, #3a2a05 0%, #a8841a 100%)",
+    "Home and Kitchen": "linear-gradient(135deg, #062a2a 0%, #0e6b6b 100%)",
+    "Tech and Workspace": "linear-gradient(135deg, #0a1733 0%, #1e3a8a 100%)",
+    "Baby and Mom": "linear-gradient(135deg, #0a2540 0%, #1e6fa8 100%)",
   };
   return map[category] ?? "linear-gradient(135deg, #111 0%, #1A1A1A 100%)";
 }
