@@ -270,7 +270,7 @@ function Pricing() {
               ))}
             </ul>
 
-            <a href="https://wa.me/27723979430" target="_blank" rel="noreferrer"
+            <a href={CHECKOUT_URL} target="_blank" rel="noreferrer"
               className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl bg-[color:var(--primary)] px-6 py-3.5 text-base font-semibold text-[color:var(--primary-foreground)] transition-colors hover:bg-[color:var(--primary-hover)] glow-btn">
               Get Instant Access
               <ArrowRight className="h-4 w-4" />
