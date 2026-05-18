@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrendingRouteImport } from './routes/trending'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RequestProductRouteImport } from './routes/request-product'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as LoginRouteImport } from './routes/login'
@@ -26,6 +27,11 @@ const TrendingRoute = TrendingRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequestProductRoute = RequestProductRouteImport.update({
+  id: '/request-product',
+  path: '/request-product',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductsRoute = ProductsRouteImport.update({
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/orders': typeof OrdersRoute
   '/products': typeof ProductsRoute
+  '/request-product': typeof RequestProductRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trending': typeof TrendingRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/orders': typeof OrdersRoute
   '/products': typeof ProductsRoute
+  '/request-product': typeof RequestProductRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trending': typeof TrendingRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/orders': typeof OrdersRoute
   '/products': typeof ProductsRoute
+  '/request-product': typeof RequestProductRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/trending': typeof TrendingRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/orders'
     | '/products'
+    | '/request-product'
     | '/sitemap.xml'
     | '/trending'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/orders'
     | '/products'
+    | '/request-product'
     | '/sitemap.xml'
     | '/trending'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/orders'
     | '/products'
+    | '/request-product'
     | '/sitemap.xml'
     | '/trending'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OrdersRoute: typeof OrdersRoute
   ProductsRoute: typeof ProductsRoute
+  RequestProductRoute: typeof RequestProductRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TrendingRoute: typeof TrendingRoute
 }
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/request-product': {
+      id: '/request-product'
+      path: '/request-product'
+      fullPath: '/request-product'
+      preLoaderRoute: typeof RequestProductRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/products': {
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OrdersRoute: OrdersRoute,
   ProductsRoute: ProductsRoute,
+  RequestProductRoute: RequestProductRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TrendingRoute: TrendingRoute,
 }
