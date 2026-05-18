@@ -1,56 +1,66 @@
 import { useEffect, useState } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+
+const STORAGE_KEY = "supplier_portal_session";
+
+export interface PortalSession {
+  email: string;
+  verifiedAt: number;
+}
 
 export interface AuthState {
-  session: Session | null;
-  user: User | null;
+  session: PortalSession | null;
+  user: { email: string } | null;
   fullName: string | null;
   isApproved: boolean;
   loading: boolean;
 }
 
+function readSession(): PortalSession | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as PortalSession;
+    if (!parsed?.email) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function saveSession(email: string) {
+  const s: PortalSession = { email, verifiedAt: Date.now() };
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+  window.dispatchEvent(new Event("portal-auth-change"));
+  return s;
+}
+
+export function clearSession() {
+  window.localStorage.removeItem(STORAGE_KEY);
+  window.dispatchEvent(new Event("portal-auth-change"));
+}
+
 export function useAuth(): AuthState {
-  const [session, setSession] = useState<Session | null>(null);
-  const [fullName, setFullName] = useState<string | null>(null);
-  const [isApproved, setIsApproved] = useState(false);
+  const [session, setSession] = useState<PortalSession | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      setSession(s);
-      if (!s) {
-        setFullName(null);
-        setIsApproved(false);
-      }
-    });
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
-    return () => sub.subscription.unsubscribe();
+    setSession(readSession());
+    setLoading(false);
+    const onChange = () => setSession(readSession());
+    window.addEventListener("portal-auth-change", onChange);
+    window.addEventListener("storage", onChange);
+    return () => {
+      window.removeEventListener("portal-auth-change", onChange);
+      window.removeEventListener("storage", onChange);
+    };
   }, []);
-
-  useEffect(() => {
-    if (!session?.user) return;
-    const uid = session.user.id;
-    (async () => {
-      const [{ data: profile }, { data: roles }] = await Promise.all([
-        supabase.from("profiles").select("full_name").eq("id", uid).maybeSingle(),
-        supabase.from("user_roles").select("role").eq("user_id", uid),
-      ]);
-      setFullName(profile?.full_name ?? session.user.email ?? null);
-      setIsApproved(
-        !!roles?.some((r) => r.role === "approved" || r.role === "admin"),
-      );
-    })();
-  }, [session]);
 
   return {
     session,
-    user: session?.user ?? null,
-    fullName,
-    isApproved,
+    user: session ? { email: session.email } : null,
+    fullName: session?.email ?? null,
+    isApproved: !!session,
     loading,
   };
 }

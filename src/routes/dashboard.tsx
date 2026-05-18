@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, Package, Tag, Headphones, ExternalLink } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProtectedShell } from "@/components/ProtectedShell";
-import { useAuth } from "@/hooks/use-auth";
+
 
 export const Route = createFileRoute("/dashboard")({
   component: () => (
@@ -35,7 +35,6 @@ const fmt = (n: number) =>
   `R${n.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 function Dashboard() {
-  const { isApproved, loading: authLoading } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,10 +42,6 @@ function Dashboard() {
   const [category, setCategory] = useState("All");
 
   useEffect(() => {
-    if (authLoading || !isApproved) {
-      setLoading(false);
-      return;
-    }
     (async () => {
       const { data, error } = await supabase
         .from("products")
@@ -56,7 +51,7 @@ function Dashboard() {
       setProducts((data as Product[]) ?? []);
       setLoading(false);
     })();
-  }, [isApproved, authLoading]);
+  }, []);
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -72,25 +67,6 @@ function Dashboard() {
     [products],
   );
 
-  if (!authLoading && !isApproved) {
-    return (
-      <div className="mx-auto max-w-xl rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-8 text-center glow-card">
-        <h2 className="text-xl font-semibold text-white">Account Pending Approval</h2>
-        <p className="mt-2 text-sm text-[color:var(--muted-foreground)]">
-          Your account exists but hasn&apos;t been approved yet. Message us on
-          WhatsApp to get verified and gain access to the catalogue.
-        </p>
-        <a
-          href="https://wa.me/27723979430"
-          target="_blank"
-          rel="noreferrer"
-          className="mt-6 inline-flex items-center justify-center rounded-lg bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-[color:var(--primary-foreground)] hover:bg-[color:var(--primary-hover)] glow-btn"
-        >
-          Contact on WhatsApp
-        </a>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-8">

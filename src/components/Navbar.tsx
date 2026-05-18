@@ -1,7 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth, clearSession } from "@/hooks/use-auth";
 
 function Logo() {
   return (
@@ -25,8 +24,8 @@ export function Navbar() {
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
+  const signOut = () => {
+    clearSession();
     navigate({ to: "/login" });
   };
 
