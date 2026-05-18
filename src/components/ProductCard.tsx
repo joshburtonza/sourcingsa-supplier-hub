@@ -21,6 +21,18 @@ function ordinal(n: number) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
+function categoryGradient(category: string): string {
+  const map: Record<string, string> = {
+    Fitness: "linear-gradient(135deg, #3a0a0a 0%, #7a1212 100%)",
+    Beauty: "linear-gradient(135deg, #3a0a24 0%, #8a1d57 100%)",
+    Home: "linear-gradient(135deg, #062a2a 0%, #0e6b6b 100%)",
+    Tech: "linear-gradient(135deg, #0a1733 0%, #1e3a8a 100%)",
+    "Pet Products": "linear-gradient(135deg, #3a1a05 0%, #9a4a10 100%)",
+    Fashion: "linear-gradient(135deg, #1a0a3a 0%, #4a1a8a 100%)",
+  };
+  return map[category] ?? "linear-gradient(135deg, #111 0%, #1A1A1A 100%)";
+}
+
 export function ProductCard({
   product,
   rank,
