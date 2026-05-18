@@ -171,10 +171,10 @@ function StatsSection() {
     },
     {
       icon: <Truck className="h-5 w-5" />,
-      value: "2–5",
-      title: "Day delivery anywhere in SA",
-      body: "No AliExpress. No 6-week waits. No customers asking where their order is.",
-      pill: "Local fulfilment",
+      value: "100+",
+      title: "Vetted SA Products",
+      body: "Hand-picked products validated for the South African market. Real demand. Real margins.",
+      pill: "Updated weekly",
     },
   ];
 
