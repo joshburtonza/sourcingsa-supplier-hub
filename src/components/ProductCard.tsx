@@ -29,6 +29,11 @@ function categoryGradient(category: string): string {
     Tech: "linear-gradient(135deg, #0a1733 0%, #1e3a8a 100%)",
     "Pet Products": "linear-gradient(135deg, #3a1a05 0%, #9a4a10 100%)",
     Fashion: "linear-gradient(135deg, #1a0a3a 0%, #4a1a8a 100%)",
+    "Hair Care": "linear-gradient(135deg, #052e1a 0%, #0d6b3d 100%)",
+    Skincare: "linear-gradient(135deg, #3a0a1c 0%, #9a1d44 100%)",
+    Baby: "linear-gradient(135deg, #0a2540 0%, #1e6fa8 100%)",
+    "Men's Grooming": "linear-gradient(135deg, #1a1f29 0%, #3a4556 100%)",
+    Jewellery: "linear-gradient(135deg, #3a2a05 0%, #a8841a 100%)",
   };
   return map[category] ?? "linear-gradient(135deg, #111 0%, #1A1A1A 100%)";
 }
