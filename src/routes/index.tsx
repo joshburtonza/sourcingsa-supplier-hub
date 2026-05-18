@@ -228,7 +228,7 @@ function Pricing() {
     "Cost prices + suggested sell prices",
     "Ready-to-use product descriptions",
     "Pre-tested ad angles included",
-    "2–5 day delivery anywhere in SA",
+    "Products sourced and validated specifically for the SA market.",
     "Direct WhatsApp support",
     "Cancel anytime, no contracts",
   ];
