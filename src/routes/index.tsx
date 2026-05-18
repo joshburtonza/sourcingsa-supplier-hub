@@ -11,7 +11,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "The Products Behind Every Winning SA Dropshipping Store" },
-      { name: "description", content: "Private supplier portal for South African dropshippers. Hand-picked products, real margins, 2-5 day local delivery. R99/month." },
+      { name: "description", content: "Private supplier portal for South African dropshippers. Hand-picked products, real margins, vetted SA suppliers. R99/month." },
       { property: "og:title", content: "The Products Behind Every Winning SA Dropshipping Store" },
       { property: "og:description", content: "Private supplier portal for South African dropshippers. R99/month, cancel anytime." },
     ],
