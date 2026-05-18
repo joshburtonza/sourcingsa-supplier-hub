@@ -38,7 +38,7 @@ export function ProductCard({
       )}
       <div
         className="relative aspect-[4/3] overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #111 0%, #1A1A1A 100%)" }}
+        style={{ background: categoryGradient(product.category) }}
       >
         {product.image_url ? (
           <img
@@ -48,8 +48,8 @@ export function ProductCard({
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
-          <div className="grid h-full w-full place-items-center text-[color:var(--muted-foreground)]">
-            <Package className="h-12 w-12 opacity-30" />
+          <div className="grid h-full w-full place-items-center text-white/40">
+            <Package className="h-12 w-12" />
           </div>
         )}
       </div>
