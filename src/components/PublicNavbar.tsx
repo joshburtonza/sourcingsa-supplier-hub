@@ -59,7 +59,7 @@ export function PublicNavbar() {
                 className="block text-sm text-[color:var(--foreground)]">{l.label}</a>
             ))}
             <Link to="/login" className="block text-sm text-[color:var(--foreground)]">Login</Link>
-            <a href="#pricing" onClick={() => setOpen(false)}
+            <a href="https://byjbdf-2k.myshopify.com/checkouts/cn/hWNCJl4hotDQ0n05xDu8oPnG/en-za?_r=AQABy_sDJ4mXBCFU5a7Bai_NPknqBl197qdTJdb9mCUKjEM&preview_theme_id=188057157949" target="_blank" rel="noreferrer" onClick={() => setOpen(false)}
               className="block rounded-lg bg-[color:var(--primary)] px-4 py-2 text-center text-sm font-semibold text-[color:var(--primary-foreground)]">
               Get Access
             </a>
