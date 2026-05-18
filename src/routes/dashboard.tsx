@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProtectedShell } from "@/components/ProtectedShell";
 import { useAuth } from "@/hooks/use-auth";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/dashboard")({
   component: () => (
     <ProtectedShell>
       <Dashboard />
