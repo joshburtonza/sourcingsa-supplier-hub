@@ -46,11 +46,8 @@ function Hero() {
       <div className="relative mx-auto flex max-w-5xl flex-col items-center text-center fade-in-up">
         <StarRatingPills />
 
-        <div className="mt-5 flex items-center gap-2 rounded-full border border-[color:var(--border)] bg-[color:var(--card)] px-4 py-1.5 text-xs">
-          <span className="relative grid h-2 w-2 place-items-center">
-            <span className="absolute h-2 w-2 rounded-full pulse-dot" />
-            <span className="h-2 w-2 rounded-full bg-[color:var(--primary)]" />
-          </span>
+        <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] bg-[color:var(--card)] px-4 py-1.5 text-xs">
+          <span className="pulse-dot" aria-hidden />
           <span className="font-semibold uppercase tracking-wider text-white">
             Private Access · South Africa Only
           </span>
