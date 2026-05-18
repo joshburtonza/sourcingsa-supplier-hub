@@ -67,7 +67,7 @@ function Hero() {
           your South African customers.
         </p>
 
-        <a href="#pricing"
+        <a href={CHECKOUT_URL} target="_blank" rel="noreferrer"
           className="mt-10 inline-flex items-center gap-2 rounded-xl bg-[color:var(--primary)] px-6 py-3.5 text-base font-semibold text-[color:var(--primary-foreground)] transition-colors hover:bg-[color:var(--primary-hover)] glow-btn">
           Get Instant Access — R99/month
           <ArrowRight className="h-4 w-4" />
