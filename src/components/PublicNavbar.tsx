@@ -40,7 +40,7 @@ export function PublicNavbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <a href="#pricing"
+          <a href="https://byjbdf-2k.myshopify.com/checkouts/cn/hWNCJl4hotDQ0n05xDu8oPnG/en-za?_r=AQABy_sDJ4mXBCFU5a7Bai_NPknqBl197qdTJdb9mCUKjEM&preview_theme_id=188057157949" target="_blank" rel="noreferrer"
             className="hidden rounded-lg bg-[color:var(--primary)] px-4 py-2 text-sm font-semibold text-[color:var(--primary-foreground)] transition-colors hover:bg-[color:var(--primary-hover)] glow-btn md:inline-flex">
             Get Access
           </a>
