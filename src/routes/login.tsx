@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { verifyAccess } from "@/lib/auth.functions";
 import { useAuth, saveSession } from "@/hooks/use-auth";
+import logo from "@/assets/logo.png";
 
 const CHECKOUT_URL =
   "https://byjbdf-2k.myshopify.com/checkouts/cn/hWNCJl4hotDQ0n05xDu8oPnG/en-za?_r=AQABy_sDJ4mXBCFU5a7Bai_NPknqBl197qdTJdb9mCUKjEM&preview_theme_id=188057157949";
@@ -21,15 +22,8 @@ export const Route = createFileRoute("/login")({
 function Logo() {
   return (
     <div className="mx-auto mb-6 flex flex-col items-center gap-3">
-      <Link
-        to="/"
-        className="grid h-14 w-14 place-items-center rounded-2xl"
-        style={{
-          background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
-          boxShadow: "0 0 32px -4px var(--glow-strong)",
-        }}
-      >
-        <div className="h-5 w-5 rounded bg-black/80" />
+      <Link to="/" className="block">
+        <img src={logo} alt="ZA Supplier Hub" className="h-auto w-[180px] object-contain" />
       </Link>
       <span className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted-foreground)]">
         Supplier Portal

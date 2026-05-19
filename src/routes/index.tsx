@@ -5,6 +5,7 @@ import {
 import { PublicNavbar } from "@/components/PublicNavbar";
 import { StarRatingPills, TrendingSection } from "@/components/landing/Trending";
 import { SalesPanel, FulfilmentPanel } from "@/components/landing/DashboardPreviews";
+import logo from "@/assets/logo.png";
 
 export const CHECKOUT_URL = "https://byjbdf-2k.myshopify.com/checkouts/cn/hWNCJl4hotDQ0n05xDu8oPnG/en-za?_r=AQABy_sDJ4mXBCFU5a7Bai_NPknqBl197qdTJdb9mCUKjEM&preview_theme_id=188057157949";
 
@@ -301,9 +302,12 @@ function Footer() {
   return (
     <footer className="border-t border-[color:var(--border)] px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
-        <p className="text-xs text-[color:var(--muted-foreground)]">
-          © {new Date().getFullYear()} Supplier Portal. South Africa.
-        </p>
+        <div className="flex items-center gap-3">
+          <img src={logo} alt="ZA Supplier Hub" className="h-auto w-[140px] object-contain" />
+          <p className="text-xs text-[color:var(--muted-foreground)]">
+            © {new Date().getFullYear()} South Africa.
+          </p>
+        </div>
         <div className="flex items-center gap-6 text-xs">
           <Link to="/login" className="text-[color:var(--muted-foreground)] hover:text-[color:var(--primary)]">
             Member Login
