@@ -12,6 +12,7 @@ import {
   X,
 } from "lucide-react";
 import { clearSession, useAuth } from "@/hooks/use-auth";
+import logo from "@/assets/logo.png";
 
 type Item = { to: string; label: string; icon: typeof Home };
 
@@ -26,18 +27,7 @@ const NAV: Item[] = [
 
 function Logo() {
   return (
-    <div className="flex items-center gap-2">
-      <div
-        className="grid h-9 w-9 place-items-center rounded-xl"
-        style={{
-          background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
-          boxShadow: "0 0 24px -6px var(--glow-strong)",
-        }}
-      >
-        <div className="h-3 w-3 rounded-sm bg-black/80" />
-      </div>
-      <span className="text-sm font-semibold tracking-wide text-white">Members</span>
-    </div>
+    <img src={logo} alt="ZA Supplier Hub" className="h-auto w-[160px] object-contain" />
   );
 }
 
