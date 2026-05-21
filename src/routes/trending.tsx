@@ -28,7 +28,7 @@ function Page() {
       <ProductBrowser
         trendingOnly
         rankItems
-        emptyMessage="No trending products yet."
+        emptyMessage="No products available yet."
       />
     </div>
   );
