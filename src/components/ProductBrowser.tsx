@@ -32,7 +32,7 @@ const PRICE_RANGES = [
 export function ProductBrowser({
   trendingOnly = false,
   rankItems = false,
-  emptyMessage = "No products match your filters.",
+  emptyMessage = "No products available yet.",
 }: {
   trendingOnly?: boolean;
   rankItems?: boolean;
