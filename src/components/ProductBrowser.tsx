@@ -20,7 +20,7 @@ const SearchIcon = () => (
   </svg>
 );
 
-const CATEGORIES = ["All", "Hair Care", "Skincare", "Jewellery", "Fitness", "Home and Kitchen", "Tech and Workspace", "Pet Products", "Men's Grooming", "Baby and Mom", "Beauty", "Home", "Tech", "Fashion", "Baby"];
+const CATEGORIES = ["All", "Fitness", "Beauty", "Hair Care", "Skincare", "Jewellery", "Home & Kitchen", "Tech", "Pet Products", "Fashion", "Men's Grooming", "Baby & Mom"];
 const PRICE_RANGES = [
   { label: "Any Price", min: 0, max: Infinity },
   { label: "Under R200", min: 0, max: 200 },
