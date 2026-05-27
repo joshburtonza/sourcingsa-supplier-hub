@@ -18,12 +18,12 @@ function AreaChart() {
     <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-44 w-full">
       <defs>
         <linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#6366f1" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+          <stop offset="0%" stopColor="#22c55e" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
         </linearGradient>
       </defs>
       <polygon fill="url(#areaG)" points={`${points} 100,100 0,100`} />
-      <polyline fill="none" stroke="#818cf8" strokeWidth="1.2" points={points} />
+      <polyline fill="none" stroke="#22c55e" strokeWidth="1.2" points={points} />
     </svg>
   );
 }
@@ -63,8 +63,8 @@ export function SalesPanel() {
                 <span key={t}
                   className={`rounded-md px-2 py-1 text-[10px] font-semibold ${
                     i === 1
-                      ? "bg-[color:var(--primary)] text-white"
-                      : "bg-[color:var(--card)] text-[color:var(--muted-foreground)]"
+                      ? "bg-[color:var(--primary)] text-black"
+                      : "bg-[#0A0A0A] text-[color:var(--muted-foreground)]"
                   }`}>{t}</span>
               ))}
             </div>
@@ -118,7 +118,7 @@ export function FulfilmentPanel() {
               <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
                 o.green
                   ? "bg-[#22c55e]/15 text-[#22c55e]"
-                  : "bg-[color:var(--primary)]/15 text-[color:var(--primary)]"
+                  : "bg-[#f59e0b]/15 text-[#f59e0b]"
               }`}>{o.status}</span>
             </div>
           ))}
@@ -133,7 +133,7 @@ export function FulfilmentPanel() {
               <div key={i} className="rounded-lg border border-[color:var(--border)] bg-black/40 p-3">
                 <div className="h-2 w-3/4 rounded bg-white/10 blur-[2px]" />
                 <div className="mt-3 h-1.5 w-full rounded-full bg-[color:var(--border)] overflow-hidden">
-                  <div className="h-full rounded-full bg-gradient-to-r from-[#6366f1] to-[#818cf8]" style={{ width: `${p.w}%` }} />
+                  <div className="h-full rounded-full bg-[color:var(--primary)]" style={{ width: `${p.w}%` }} />
                 </div>
                 <div className="mt-2 flex items-baseline justify-between">
                   <span className="text-xs text-[color:var(--muted-foreground)]">sales</span>
