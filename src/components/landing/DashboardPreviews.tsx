@@ -133,7 +133,7 @@ export function FulfilmentPanel() {
               <div key={i} className="rounded-lg border border-[color:var(--border)] bg-black/40 p-3">
                 <div className="h-2 w-3/4 rounded bg-white/10 blur-[2px]" />
                 <div className="mt-3 h-1.5 w-full rounded-full bg-[color:var(--border)] overflow-hidden">
-                  <div className="h-full rounded-full bg-gradient-to-r from-[#6366f1] to-[#818cf8]" style={{ width: `${p.w}%` }} />
+                  <div className="h-full rounded-full bg-[color:var(--primary)]" style={{ width: `${p.w}%` }} />
                 </div>
                 <div className="mt-2 flex items-baseline justify-between">
                   <span className="text-xs text-[color:var(--muted-foreground)]">sales</span>
