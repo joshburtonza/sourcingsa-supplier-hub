@@ -3,6 +3,7 @@ import { Check, Lock } from "lucide-react";
 import { PublicNavbar } from "@/components/PublicNavbar";
 import { StarRatingPills, TrendingSection } from "@/components/landing/Trending";
 import { SalesPanel, FulfilmentPanel } from "@/components/landing/DashboardPreviews";
+import { FloatingDashboardMockup } from "@/components/landing/FloatingDashboardMockup";
 
 export const CHECKOUT_URL = "https://byjbdf-2k.myshopify.com/checkouts/cn/hWNCJl4hotDQ0n05xDu8oPnG/en-za?_r=AQABy_sDJ4mXBCFU5a7Bai_NPknqBl197qdTJdb9mCUKjEM&preview_theme_id=188057157949";
 
@@ -20,17 +21,15 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen" style={{ background: "#05060F" }}>
       <PublicNavbar />
-      <div className="pt-16">
-        <Hero />
-        <TrendingSection />
-        <StackSection />
-        <StatsSection />
-        <WhyItWorks />
-        <Pricing />
-        <Footer />
-      </div>
+      <Hero />
+      <TrendingSection />
+      <StackSection />
+      <StatsSection />
+      <WhyItWorks />
+      <Pricing />
+      <Footer />
     </div>
   );
 }
@@ -39,45 +38,53 @@ const AVATARS = ["JV", "MS", "RB", "CP", "WP"];
 
 function Hero() {
   return (
-    <section className="grain relative overflow-hidden px-4 pt-16 pb-24 sm:px-6 sm:pt-24 lg:px-8 lg:pt-28">
-      <div className="relative mx-auto flex max-w-5xl flex-col items-center text-center fade-in-up">
-        <div className="inline-flex items-center gap-2 rounded-full border border-[#7B5EE8] bg-black px-4 py-1.5 text-xs">
-          <Lock className="h-3 w-3 text-[#7B5EE8]" />
-          <span className="text-[#A1A1AA]">Private Access · South Africa Only</span>
-        </div>
+    <section className="relative overflow-hidden">
+      <div aria-hidden className="hero-glow pointer-events-none absolute inset-0" />
+      <div aria-hidden className="dot-grid pointer-events-none absolute inset-0 opacity-50"
+        style={{ maskImage: "radial-gradient(ellipse at center top, black 0%, transparent 70%)" }} />
 
-        <h1 className="mt-8 max-w-4xl text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-          The Products Behind Every Winning SA Dropshipping Store.
-        </h1>
-
-        <p className="mt-6 max-w-2xl text-base text-[#A1A1AA] sm:text-lg">
-          Stop guessing what to sell. Stop gambling on 6-week shipping times.
-          Get the exact products — ready to sell, ready to ship, straight to
-          your South African customers.
-        </p>
-
-        <a href={CHECKOUT_URL} target="_blank" rel="noreferrer"
-          className="btn-purple mt-10 inline-flex items-center gap-2 px-7 py-4 text-base">
-          Get Instant Access — R99/month →
-        </a>
-
-        <p className="mt-4 text-xs text-[#A1A1AA]">
-          Cancel anytime · No contracts · Instant access on payment
-        </p>
-
-        <div className="mt-12 flex flex-col items-center gap-4">
-          <div className="flex items-center -space-x-2">
-            {AVATARS.map((a, i) => (
-              <div key={a} className="grid h-9 w-9 place-items-center rounded-full border-2 border-black bg-[#111111] text-[11px] font-bold text-white"
-                style={{ zIndex: AVATARS.length - i }}>{a}</div>
-            ))}
-            <div className="grid h-9 w-9 place-items-center rounded-full border-2 border-black bg-[#7B5EE8] text-xs font-bold text-white">+</div>
+      <div className="relative px-4 pt-28 pb-10 sm:px-6 sm:pt-32 lg:px-8 lg:pt-36">
+        <div className="mx-auto flex max-w-5xl flex-col items-center text-center fade-in-up">
+          <div className="glass-pill-purple inline-flex items-center gap-2 px-4 py-1.5 text-xs">
+            <Lock className="h-3 w-3" />
+            <span>Private Access · South Africa Only</span>
           </div>
-          <p className="text-center text-sm text-[#A1A1AA]">
-            Trusted by 500+ South African dropshippers generating R50M+ in sales
+
+          <h1 className="mt-8 max-w-4xl text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
+            The Products Behind Every Winning SA Dropshipping Store.
+          </h1>
+
+          <p className="mt-6 max-w-2xl text-base text-[#A1A1AA] sm:text-lg">
+            Stop guessing what to sell. Stop gambling on 6-week shipping times.
+            Get the exact products — ready to sell, ready to ship, straight to
+            your South African customers.
           </p>
-          <StarRatingPills />
+
+          <a href={CHECKOUT_URL} target="_blank" rel="noreferrer"
+            className="glass-pill-purple mt-10 inline-flex items-center gap-2 px-7 py-4 text-base">
+            Get Instant Access — R99/month →
+          </a>
+
+          <p className="mt-4 text-xs text-[#A1A1AA]">
+            Cancel anytime · No contracts · Instant access on payment
+          </p>
+
+          <div className="mt-10 flex flex-col items-center gap-4">
+            <div className="flex items-center -space-x-2">
+              {AVATARS.map((a, i) => (
+                <div key={a} className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#05060F] bg-white/10 text-[11px] font-bold text-white backdrop-blur-md"
+                  style={{ zIndex: AVATARS.length - i }}>{a}</div>
+              ))}
+              <div className="grid h-9 w-9 place-items-center rounded-full border-2 border-[#05060F] bg-[#7B5EE8] text-xs font-bold text-white">+</div>
+            </div>
+            <p className="text-center text-sm text-[#A1A1AA]">
+              Trusted by 500+ South African dropshippers generating R50M+ in sales
+            </p>
+            <StarRatingPills />
+          </div>
         </div>
+
+        <FloatingDashboardMockup />
       </div>
     </section>
   );
@@ -105,7 +112,7 @@ function StackSection() {
           <FeatureBlock
             eyebrow="For Fulfilment"
             title="We ship it. You keep the profit."
-            description="Customer orders from your store. You send us the order. We ship direct to your customer anywhere in South Africa. No stock. No warehouse. No stress. Products sourced and validated specifically for the SA market."
+            description="Customer orders from your store. You send us the order. We ship direct to your customer anywhere in South Africa. No stock. No warehouse. No stress."
             bullets={["Vetted SA suppliers", "No stock needed", "Live order tracking", "Auto-notifications"]}
             panel={<FulfilmentPanel />}
           />
@@ -119,8 +126,8 @@ function FeatureBlock({ eyebrow, title, description, bullets, panel }: {
   eyebrow: string; title: string; description: string; bullets: string[]; panel: React.ReactNode;
 }) {
   return (
-    <div className="rounded-3xl border border-[#1F1F1F] bg-[#111111] p-6 md:p-8">
-      <span className="inline-flex rounded-full border border-[#7B5EE8] bg-black px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#7B5EE8]">
+    <div className="glass p-6 md:p-8">
+      <span className="glass-pill-purple inline-flex px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em]">
         {eyebrow}
       </span>
       <h3 className="mt-4 text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl">
@@ -142,16 +149,16 @@ function FeatureBlock({ eyebrow, title, description, bullets, panel }: {
 
 function StatsSection() {
   const stats = [
-    { value: "R50M+", title: "Generated by SA dropshippers", body: "Using products from this catalogue. Real stores. Real people. Real income.", pill: "And growing every month" },
-    { value: "500+", title: "Active South African sellers", body: "From Johannesburg to Cape Town — all selling online without holding a single product.", pill: "New members joining daily" },
-    { value: "100+", title: "Vetted SA Products", body: "Hand-picked products validated for the South African market. Real demand. Real margins.", pill: "Updated weekly" },
+    { value: "R50M+", title: "Generated by SA dropshippers", body: "Real stores. Real people. Real income.", pill: "And growing every month" },
+    { value: "500+", title: "Active South African sellers", body: "From Johannesburg to Cape Town.", pill: "New members joining daily" },
+    { value: "100+", title: "Vetted SA Products", body: "Real demand. Real margins.", pill: "Updated weekly" },
   ];
   return (
     <section className="relative px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-5 lg:grid-cols-3">
           {stats.map((s) => (
-            <div key={s.value} className="flex flex-col rounded-2xl border border-[#1F1F1F] bg-[#111111] p-8 text-center">
+            <div key={s.value} className="glass flex flex-col p-8 text-center">
               <div className="text-5xl font-bold tracking-tight text-white sm:text-6xl">{s.value}</div>
               <div className="mt-4 text-lg font-bold text-white">{s.title}</div>
               <p className="mt-3 flex-1 text-sm leading-relaxed text-[#A1A1AA]">{s.body}</p>
@@ -203,8 +210,8 @@ function Pricing() {
           </h2>
         </div>
 
-        <div className="mt-10 rounded-3xl bg-[#111111] p-8"
-          style={{ border: "1px solid #7B5EE8", boxShadow: "0 0 30px rgba(107, 79, 232, 0.3)" }}>
+        <div className="glass mt-10 p-8"
+          style={{ border: "1px solid rgba(107,79,232,0.5)", boxShadow: "0 0 40px rgba(107,79,232,0.2)" }}>
           <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#7B5EE8]">Member Access</div>
           <div className="mt-3 flex items-baseline gap-1">
             <span className="text-5xl font-bold tracking-tight text-white">R99</span>
@@ -217,7 +224,7 @@ function Pricing() {
           <ul className="mt-8 space-y-3.5">
             {features.map((f) => (
               <li key={f} className="flex items-start gap-3">
-                <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#7B5EE8]/15 text-[#7B5EE8]">
+                <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[rgba(107,79,232,0.2)] text-[#7B5EE8]">
                   <Check className="h-3 w-3" strokeWidth={3} />
                 </span>
                 <span className="text-sm text-white">{f}</span>
@@ -226,7 +233,7 @@ function Pricing() {
           </ul>
 
           <a href={CHECKOUT_URL} target="_blank" rel="noreferrer"
-            className="btn-purple mt-8 flex w-full items-center justify-center gap-2 px-6 py-4 text-base">
+            className="glass-pill-purple mt-8 flex w-full items-center justify-center gap-2 px-6 py-4 text-base">
             Get Instant Access
           </a>
           <p className="mt-4 text-center text-xs text-[#A1A1AA]">Cancel anytime · No contracts</p>
@@ -238,7 +245,7 @@ function Pricing() {
 
 function SectionEyebrow({ text }: { text: string }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-[#7B5EE8] bg-black px-3 py-1">
+    <div className="glass-pill inline-flex items-center gap-2 px-3 py-1">
       <span className="h-1.5 w-1.5 rounded-full bg-[#7B5EE8]" />
       <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A1A1AA]">{text}</span>
     </div>
@@ -247,12 +254,12 @@ function SectionEyebrow({ text }: { text: string }) {
 
 function Footer() {
   return (
-    <footer className="border-t border-[#1F1F1F] bg-black px-4 py-10 sm:px-6 lg:px-8">
+    <footer className="border-t border-white/8 px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
         <p className="text-xs text-[#A1A1AA]">© 2026 South Africa.</p>
-        <div className="flex items-center gap-6 text-xs">
-          <Link to="/login" className="text-[#A1A1AA] hover:text-white">Member Login</Link>
-          <a href="https://wa.me/27723979430" target="_blank" rel="noreferrer" className="text-[#A1A1AA] hover:text-white">
+        <div className="flex items-center gap-3 text-xs">
+          <Link to="/login" className="glass-pill px-4 py-1.5">Member Login</Link>
+          <a href="https://wa.me/27723979430" target="_blank" rel="noreferrer" className="glass-pill px-4 py-1.5">
             WhatsApp
           </a>
         </div>
