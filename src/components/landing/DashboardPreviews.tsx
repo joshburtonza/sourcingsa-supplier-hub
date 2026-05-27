@@ -63,8 +63,8 @@ export function SalesPanel() {
                 <span key={t}
                   className={`rounded-md px-2 py-1 text-[10px] font-semibold ${
                     i === 1
-                      ? "bg-[color:var(--primary)] text-white"
-                      : "bg-[color:var(--card)] text-[color:var(--muted-foreground)]"
+                      ? "bg-[color:var(--primary)] text-black"
+                      : "bg-[#0A0A0A] text-[color:var(--muted-foreground)]"
                   }`}>{t}</span>
               ))}
             </div>
