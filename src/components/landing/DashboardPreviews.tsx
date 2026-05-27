@@ -18,12 +18,12 @@ function AreaChart() {
     <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-44 w-full">
       <defs>
         <linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#6366f1" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
+          <stop offset="0%" stopColor="#22c55e" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#22c55e" stopOpacity="0" />
         </linearGradient>
       </defs>
       <polygon fill="url(#areaG)" points={`${points} 100,100 0,100`} />
-      <polyline fill="none" stroke="#818cf8" strokeWidth="1.2" points={points} />
+      <polyline fill="none" stroke="#22c55e" strokeWidth="1.2" points={points} />
     </svg>
   );
 }
