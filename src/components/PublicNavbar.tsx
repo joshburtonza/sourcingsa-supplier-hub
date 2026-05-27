@@ -11,7 +11,7 @@ export function PublicNavbar() {
     { href: "#pricing", label: "Pricing" },
   ];
   return (
-    <header className="fixed top-0 inset-x-0 z-50 border-b border-[#1F1F1F] bg-black">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-[#1F1F1F] bg-black">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link to="/" className="font-display text-lg font-bold tracking-tight text-white">
           ZA Supplier Hub
@@ -19,19 +19,16 @@ export function PublicNavbar() {
 
         <nav className="hidden items-center gap-8 md:flex">
           {links.map((l) => (
-            <a key={l.href} href={l.href}
-              className="text-sm text-[#A1A1AA] transition-colors hover:text-white">
+            <a key={l.href} href={l.href} className="text-sm text-[#A1A1AA] transition-colors hover:text-white">
               {l.label}
             </a>
           ))}
-          <Link to="/login" className="text-sm text-[#A1A1AA] hover:text-white">
-            Login
-          </Link>
+          <Link to="/login" className="text-sm text-[#A1A1AA] hover:text-white">Login</Link>
         </nav>
 
         <div className="flex items-center gap-3">
           <a href={CHECKOUT_URL} target="_blank" rel="noreferrer"
-            className="hidden rounded-full bg-[color:var(--primary)] px-5 py-2 text-sm font-bold text-black transition-colors hover:bg-[color:var(--primary-hover)] md:inline-flex">
+            className="btn-purple hidden px-5 py-2 text-sm md:inline-flex">
             Get Access
           </a>
           <button onClick={() => setOpen((v) => !v)} aria-label="Toggle menu"
@@ -45,12 +42,13 @@ export function PublicNavbar() {
         <div className="border-t border-[#1F1F1F] bg-black md:hidden">
           <div className="space-y-3 px-4 py-4">
             {links.map((l) => (
-              <a key={l.href} href={l.href} onClick={() => setOpen(false)}
-                className="block text-sm text-[#A1A1AA]">{l.label}</a>
+              <a key={l.href} href={l.href} onClick={() => setOpen(false)} className="block text-sm text-[#A1A1AA]">
+                {l.label}
+              </a>
             ))}
             <Link to="/login" className="block text-sm text-[#A1A1AA]">Login</Link>
             <a href={CHECKOUT_URL} target="_blank" rel="noreferrer" onClick={() => setOpen(false)}
-              className="block rounded-full bg-[color:var(--primary)] px-4 py-2 text-center text-sm font-bold text-black">
+              className="btn-purple block px-4 py-2 text-center text-sm">
               Get Access
             </a>
           </div>
