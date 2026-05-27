@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Zap } from "lucide-react";
 import { useState } from "react";
 
 const CHECKOUT_URL = "https://byjbdf-2k.myshopify.com/checkouts/cn/hWNCJl4hotDQ0n05xDu8oPnG/en-za?_r=AQABy_sDJ4mXBCFU5a7Bai_NPknqBl197qdTJdb9mCUKjEM&preview_theme_id=188057157949";
@@ -11,9 +11,12 @@ export function PublicNavbar() {
     { href: "#pricing", label: "Pricing" },
   ];
   return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-[#1F1F1F] bg-black">
+    <header className="fixed inset-x-0 top-0 z-50" style={{ backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-        <Link to="/" className="font-display text-lg font-bold tracking-tight text-white">
+        <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-white">
+          <span className="grid h-7 w-7 place-items-center rounded-md bg-[rgba(107,79,232,0.25)] border border-[rgba(107,79,232,0.5)]">
+            <Zap className="h-3.5 w-3.5 text-white" />
+          </span>
           ZA Supplier Hub
         </Link>
 
@@ -28,18 +31,18 @@ export function PublicNavbar() {
 
         <div className="flex items-center gap-3">
           <a href={CHECKOUT_URL} target="_blank" rel="noreferrer"
-            className="btn-purple hidden px-5 py-2 text-sm md:inline-flex">
+            className="glass-pill-purple hidden px-5 py-2 text-sm md:inline-flex">
             Get Access
           </a>
           <button onClick={() => setOpen((v) => !v)} aria-label="Toggle menu"
-            className="grid h-9 w-9 place-items-center rounded-lg border border-[#1F1F1F] text-white md:hidden">
+            className="glass-pill grid h-9 w-9 place-items-center md:hidden">
             {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
         </div>
       </div>
 
       {open && (
-        <div className="border-t border-[#1F1F1F] bg-black md:hidden">
+        <div className="border-t border-white/10 bg-black/60 md:hidden">
           <div className="space-y-3 px-4 py-4">
             {links.map((l) => (
               <a key={l.href} href={l.href} onClick={() => setOpen(false)} className="block text-sm text-[#A1A1AA]">
@@ -48,7 +51,7 @@ export function PublicNavbar() {
             ))}
             <Link to="/login" className="block text-sm text-[#A1A1AA]">Login</Link>
             <a href={CHECKOUT_URL} target="_blank" rel="noreferrer" onClick={() => setOpen(false)}
-              className="btn-purple block px-4 py-2 text-center text-sm">
+              className="glass-pill-purple block px-4 py-2 text-center text-sm">
               Get Access
             </a>
           </div>
