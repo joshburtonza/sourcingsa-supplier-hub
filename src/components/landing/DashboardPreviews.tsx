@@ -118,7 +118,7 @@ export function FulfilmentPanel() {
               <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-semibold ${
                 o.green
                   ? "bg-[#22c55e]/15 text-[#22c55e]"
-                  : "bg-[color:var(--primary)]/15 text-[color:var(--primary)]"
+                  : "bg-[#f59e0b]/15 text-[#f59e0b]"
               }`}>{o.status}</span>
             </div>
           ))}
