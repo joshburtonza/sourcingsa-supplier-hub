@@ -4,16 +4,22 @@
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/server.ts",
-  // Bind the production hostname directly. `custom_domain: true` makes
-  // Cloudflare handle the SSL cert + DNS record automatically — no
-  // separate `A` / `CNAME` setup needed beyond having the zone on CF.
-  // Once this is shipped:
-  //   - https://zasupplierhub.co.za/             → landing page
-  //   - https://zasupplierhub.co.za/login        → real Supabase auth
-  //   - https://zasupplierhub.co.za/api/webhooks/shopify/orders-paid
-  //     → the URL you paste into Shopify Admin
+  // Subdomain binding. We can't use the apex `zasupplierhub.co.za`
+  // because that's the live Shopify storefront — Shopify blocks
+  // webhook targets pointing at one of its own storefront domains
+  // (anti-loop guardrail). The supplier hub app lives at
+  // app.zasupplierhub.co.za, the Shopify store keeps the apex.
+  //
+  // `custom_domain: true` lets Cloudflare handle SSL + the DNS record
+  // automatically — no separate CNAME setup needed beyond having the
+  // zone on Cloudflare.
+  //
+  // Once shipped:
+  //   - https://app.zasupplierhub.co.za/             → landing page
+  //   - https://app.zasupplierhub.co.za/login        → Supabase auth
+  //   - https://app.zasupplierhub.co.za/api/webhooks/shopify/orders-paid
+  //     → the URL you paste into Shopify Admin (Shopify accepts this)
   "routes": [
-    { "pattern": "zasupplierhub.co.za", "custom_domain": true },
-    { "pattern": "www.zasupplierhub.co.za", "custom_domain": true }
+    { "pattern": "app.zasupplierhub.co.za", "custom_domain": true }
   ]
 }
