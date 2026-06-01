@@ -22,6 +22,7 @@ import { Route as HowToOrderRouteImport } from './routes/how-to-order'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiWebhooksShopifyOrdersPaidRouteImport } from './routes/api.webhooks.shopify.orders-paid'
 
 const TrendingRoute = TrendingRouteImport.update({
   id: '/trending',
@@ -88,6 +89,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebhooksShopifyOrdersPaidRoute =
+  ApiWebhooksShopifyOrdersPaidRouteImport.update({
+    id: '/api/webhooks/shopify/orders-paid',
+    path: '/api/webhooks/shopify/orders-paid',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,6 +110,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/trending': typeof TrendingRoute
+  '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,6 +126,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/trending': typeof TrendingRoute
+  '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +143,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/trending': typeof TrendingRoute
+  '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/support'
     | '/trending'
+    | '/api/webhooks/shopify/orders-paid'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,6 +177,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/support'
     | '/trending'
+    | '/api/webhooks/shopify/orders-paid'
   id:
     | '__root__'
     | '/'
@@ -181,6 +193,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/support'
     | '/trending'
+    | '/api/webhooks/shopify/orders-paid'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -197,6 +210,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SupportRoute: typeof SupportRoute
   TrendingRoute: typeof TrendingRoute
+  ApiWebhooksShopifyOrdersPaidRoute: typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -292,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/webhooks/shopify/orders-paid': {
+      id: '/api/webhooks/shopify/orders-paid'
+      path: '/api/webhooks/shopify/orders-paid'
+      fullPath: '/api/webhooks/shopify/orders-paid'
+      preLoaderRoute: typeof ApiWebhooksShopifyOrdersPaidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -309,6 +330,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SupportRoute: SupportRoute,
   TrendingRoute: TrendingRoute,
+  ApiWebhooksShopifyOrdersPaidRoute: ApiWebhooksShopifyOrdersPaidRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

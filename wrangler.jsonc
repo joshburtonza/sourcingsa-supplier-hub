@@ -1,7 +1,19 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "tanstack-start-app",
+  "name": "zasupplierhub",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/server.ts",
+  // Bind the production hostname directly. `custom_domain: true` makes
+  // Cloudflare handle the SSL cert + DNS record automatically — no
+  // separate `A` / `CNAME` setup needed beyond having the zone on CF.
+  // Once this is shipped:
+  //   - https://zasupplierhub.co.za/             → landing page
+  //   - https://zasupplierhub.co.za/login        → real Supabase auth
+  //   - https://zasupplierhub.co.za/api/webhooks/shopify/orders-paid
+  //     → the URL you paste into Shopify Admin
+  "routes": [
+    { "pattern": "zasupplierhub.co.za", "custom_domain": true },
+    { "pattern": "www.zasupplierhub.co.za", "custom_domain": true }
+  ]
 }
