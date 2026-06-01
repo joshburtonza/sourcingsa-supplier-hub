@@ -4,22 +4,19 @@
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/server.ts",
-  // Subdomain binding. We can't use the apex `zasupplierhub.co.za`
-  // because that's the live Shopify storefront — Shopify blocks
-  // webhook targets pointing at one of its own storefront domains
-  // (anti-loop guardrail). The supplier hub app lives at
-  // app.zasupplierhub.co.za, the Shopify store keeps the apex.
+  // Deploy to the default *.workers.dev subdomain for now. Custom
+  // domain (app.zasupplierhub.co.za or a subdomain of amalfiai.com)
+  // can be bound later — needs the zone added to this CF account
+  // first, which requires either transferring zasupplierhub.co.za
+  // off Shopify or using amalfiai.com as the host.
   //
-  // `custom_domain: true` lets Cloudflare handle SSL + the DNS record
-  // automatically — no separate CNAME setup needed beyond having the
-  // zone on Cloudflare.
+  // Re-enable custom domain binding when ready:
+  //   "routes": [
+  //     { "pattern": "supplier-hub.amalfiai.com", "custom_domain": true }
+  //   ]
   //
-  // Once shipped:
-  //   - https://app.zasupplierhub.co.za/             → landing page
-  //   - https://app.zasupplierhub.co.za/login        → Supabase auth
-  //   - https://app.zasupplierhub.co.za/api/webhooks/shopify/orders-paid
-  //     → the URL you paste into Shopify Admin (Shopify accepts this)
-  "routes": [
-    { "pattern": "app.zasupplierhub.co.za", "custom_domain": true }
-  ]
+  // Live URLs after first deploy:
+  //   - https://zasupplierhub.<your-cf-subdomain>.workers.dev/
+  //   - https://zasupplierhub.<your-cf-subdomain>.workers.dev/api/webhooks/shopify/orders-paid
+  "workers_dev": true
 }
