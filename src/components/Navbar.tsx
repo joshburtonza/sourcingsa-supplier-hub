@@ -1,6 +1,6 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
-import { useAuth, clearSession } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import logo from "@/assets/logo.png";
 
 function Logo() {
@@ -10,12 +10,12 @@ function Logo() {
 }
 
 export function Navbar() {
-  const { fullName } = useAuth();
+  const { fullName, signOut: doSignOut } = useAuth();
   const navigate = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
 
-  const signOut = () => {
-    clearSession();
+  const signOut = async () => {
+    await doSignOut();
     navigate({ to: "/login" });
   };
 

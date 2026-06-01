@@ -63,6 +63,7 @@ const PERIODS = [
 
 function OrdersPage() {
   const { user } = useAuth();
+  const email = user?.email;
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Status | "all">("all");
@@ -70,17 +71,17 @@ function OrdersPage() {
   const [periodIdx, setPeriodIdx] = useState(0);
 
   useEffect(() => {
-    if (!user?.email) return;
+    if (!email) return;
     (async () => {
       const { data } = await supabase
         .from("orders")
         .select("*")
-        .eq("email", user.email)
+        .eq("email", email)
         .order("ordered_at", { ascending: false });
       setOrders((data as Order[]) ?? []);
       setLoading(false);
     })();
-  }, [user?.email]);
+  }, [email]);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: orders.length };

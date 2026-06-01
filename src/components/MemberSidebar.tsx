@@ -11,7 +11,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { clearSession, useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 import logo from "@/assets/logo.png";
 
 type Item = { to: string; label: string; icon: typeof Home };
@@ -58,12 +58,12 @@ function NavList({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function MemberShell({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
+  const { user, signOut: doSignOut } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const signOut = () => {
-    clearSession();
+  const signOut = async () => {
+    await doSignOut();
     navigate({ to: "/login" });
   };
 

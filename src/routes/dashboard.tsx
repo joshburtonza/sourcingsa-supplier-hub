@@ -57,22 +57,23 @@ const STATUS_CLS: Record<Order["status"], string> = {
 };
 
 function Dashboard() {
-  const { user, session } = useAuth();
+  const { user } = useAuth();
+  const email = user?.email;
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.email) return;
+    if (!email) return;
     (async () => {
       const { data } = await supabase
         .from("orders")
         .select("*")
-        .eq("email", user.email)
+        .eq("email", email)
         .order("ordered_at", { ascending: false });
       setOrders((data as Order[]) ?? []);
       setLoading(false);
     })();
-  }, [user?.email]);
+  }, [email]);
 
   const stats = useMemo(() => {
     const total = orders.length;
@@ -90,8 +91,11 @@ function Dashboard() {
   }, [orders]);
 
   const name = (user?.email ?? "Member").split("@")[0];
-  const memberSince = session
-    ? new Date(session.verifiedAt).toLocaleDateString("en-ZA", {
+  // `created_at` lands on auth.users.created_at — exposed via the
+  // user object from Supabase Auth. Falls back to "—" until we have
+  // a real value.
+  const memberSince = user?.created_at
+    ? new Date(user.created_at).toLocaleDateString("en-ZA", {
         year: "numeric",
         month: "short",
         day: "numeric",

@@ -1,9 +1,8 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { Eye, EyeOff } from "lucide-react";
-import { useServerFn } from "@tanstack/react-start";
-import { verifyAccess } from "@/lib/auth.functions";
-import { useAuth, saveSession } from "@/hooks/use-auth";
+import { Eye, EyeOff, Mail } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import { CHECKOUT_URL } from "@/lib/checkout";
 import logo from "@/assets/logo.png";
 
@@ -11,71 +10,86 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
   head: () => ({
     meta: [
-      { title: "Sign In — Supplier Portal" },
-      { name: "description", content: "Sign in to access the supplier portal." },
+      { title: "Sign in — ZA Supplier Hub" },
+      { name: "description", content: "Member sign in for ZA Supplier Hub." },
     ],
   }),
 });
 
-function Logo() {
-  return (
-    <div className="mx-auto mb-6 flex flex-col items-center gap-3">
-      <Link to="/" className="block">
-        <img src={logo} alt="ZA Supplier Hub" className="h-auto w-[180px] object-contain" />
-      </Link>
-      <span className="text-xs uppercase tracking-[0.3em] text-[color:var(--muted-foreground)]">
-        Supplier Portal
-      </span>
-    </div>
-  );
-}
-
-type ErrState =
-  | null
-  | { kind: "code"; message: string }
-  | { kind: "no-order"; message: string }
-  | { kind: "generic"; message: string };
+type Tab = "password" | "magic";
 
 function LoginPage() {
+  const { session, loading } = useAuth();
   const navigate = useNavigate();
-  const { session, loading: authLoading } = useAuth();
-  const verify = useServerFn(verifyAccess);
+  const [tab, setTab] = useState<Tab>("password");
   const [email, setEmail] = useState("");
-  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<ErrState>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
+  // If already signed in, send them straight to the dashboard.
   useEffect(() => {
-    if (!authLoading && session) navigate({ to: "/dashboard" });
-  }, [authLoading, session, navigate]);
+    if (!loading && session) {
+      navigate({ to: "/dashboard" });
+    }
+  }, [loading, session, navigate]);
 
-  async function onSubmit(e: FormEvent) {
+  async function onPasswordSubmit(e: FormEvent) {
     e.preventDefault();
     setErr(null);
+    setInfo(null);
+    if (!email || !password) {
+      setErr("Email and password are both required.");
+      return;
+    }
     setBusy(true);
     try {
-      const res = await verify({ data: { email, code } });
-      if (res.ok) {
-        saveSession(res.email);
-        navigate({ to: "/dashboard" });
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      if (error) {
+        setErr(error.message ?? "Sign in failed.");
         return;
       }
-      if (res.reason === "code") {
-        setErr({ kind: "code", message: "Incorrect access code. Check your welcome email." });
-      } else if (res.reason === "server_misconfigured") {
-        setErr({
-          kind: "generic",
-          message: "Sign-in is temporarily disabled — please contact support.",
-        });
-      } else {
-        setErr({
-          kind: "no-order",
-          message: "No active subscription found.",
-        });
+      navigate({ to: "/dashboard" });
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function onMagicSubmit(e: FormEvent) {
+    e.preventDefault();
+    setErr(null);
+    setInfo(null);
+    if (!email) {
+      setErr("Enter your email to receive the magic link.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim().toLowerCase(),
+        options: {
+          // We don't auto-create an account here — magic links only work
+          // for existing accounts. Sign-up goes through the dedicated
+          // signup flow so the user can pick a password.
+          shouldCreateUser: false,
+          emailRedirectTo:
+            typeof window !== "undefined" ? `${window.location.origin}/dashboard` : undefined,
+        },
+      });
+      if (error) {
+        setErr(error.message ?? "Couldn't send the magic link.");
+        return;
       }
-    } catch (e: any) {
-      setErr({ kind: "generic", message: e?.message ?? "Something went wrong" });
+      setInfo("Magic link sent. Check your inbox.");
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
       setBusy(false);
     }
@@ -92,84 +106,155 @@ function LoginPage() {
         }}
       />
       <div className="relative w-full max-w-md">
-        <Logo />
+        <div className="flex justify-center pb-6">
+          <img src={logo} alt="ZA Supplier Hub" className="h-auto w-[160px] object-contain" />
+        </div>
         <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-8 glow-card">
-          <h1 className="text-2xl font-semibold text-white">Welcome Back</h1>
+          <h1 className="text-2xl font-semibold text-white">Welcome back</h1>
           <p className="mt-1 text-sm text-[color:var(--muted-foreground)]">
-            Sign in to access the supplier portal
+            Sign in to access the supplier portal.
           </p>
 
-          <form onSubmit={onSubmit} className="mt-6 space-y-4">
-            <Field label="Email">
-              <input
-                required
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input focus-glow"
-                placeholder="you@example.com"
-              />
-            </Field>
-            <Field label="Access Code">
-              <div className="relative">
+          {/* Tab toggle */}
+          <div className="mt-6 flex gap-1 rounded-lg bg-white/5 p-1">
+            <button
+              type="button"
+              onClick={() => {
+                setTab("password");
+                setErr(null);
+                setInfo(null);
+              }}
+              className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+                tab === "password"
+                  ? "bg-[color:var(--primary)]/15 text-[color:var(--primary)]"
+                  : "text-[color:var(--muted-foreground)] hover:text-white"
+              }`}
+            >
+              Password
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTab("magic");
+                setErr(null);
+                setInfo(null);
+              }}
+              className={`flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${
+                tab === "magic"
+                  ? "bg-[color:var(--primary)]/15 text-[color:var(--primary)]"
+                  : "text-[color:var(--muted-foreground)] hover:text-white"
+              }`}
+            >
+              Magic link
+            </button>
+          </div>
+
+          {tab === "password" ? (
+            <form onSubmit={onPasswordSubmit} className="mt-5 space-y-4">
+              <Field label="Email">
                 <input
                   required
-                  type={showPw ? "text" : "password"}
-                  autoComplete="current-password"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="input focus-glow pr-11"
-                  placeholder="••••••••"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input focus-glow"
+                  placeholder="you@example.com"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPw((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--muted-foreground)] hover:text-[color:var(--primary)]"
-                  aria-label={showPw ? "Hide code" : "Show code"}
-                >
-                  {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-            </Field>
-
-            {err && (
-              <div className="rounded-lg border border-[color:var(--destructive)]/40 bg-[color:var(--destructive)]/10 px-3 py-2 text-sm text-[color:var(--destructive)]">
-                {err.message}{" "}
-                {err.kind === "no-order" && (
-                  <a
-                    href={CHECKOUT_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-semibold underline hover:text-[color:var(--primary)]"
+              </Field>
+              <Field label="Password">
+                <div className="relative">
+                  <input
+                    required
+                    type={showPw ? "text" : "password"}
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="input focus-glow pr-11"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--muted-foreground)] hover:text-[color:var(--primary)]"
+                    aria-label={showPw ? "Hide password" : "Show password"}
                   >
-                    Click here to get access.
-                  </a>
-                )}
-              </div>
-            )}
+                    {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </Field>
 
-            <button
-              type="submit"
-              disabled={busy}
-              className="w-full rounded-lg bg-[color:var(--primary)] px-4 py-3 text-sm font-semibold text-[color:var(--primary-foreground)] transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:opacity-60"
-            >
-              {busy ? "Verifying…" : "Sign In"}
-            </button>
-          </form>
+              <div className="flex items-center justify-end">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-[color:var(--muted-foreground)] hover:text-[color:var(--primary)]"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
+              {err && <ErrorBanner message={err} />}
+              {info && <InfoBanner message={info} />}
+
+              <button
+                type="submit"
+                disabled={busy}
+                className="w-full rounded-lg bg-[color:var(--primary)] px-4 py-3 text-sm font-semibold text-[color:var(--primary-foreground)] transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:opacity-60"
+              >
+                {busy ? "Signing in…" : "Sign in"}
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={onMagicSubmit} className="mt-5 space-y-4">
+              <Field label="Email">
+                <input
+                  required
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="input focus-glow"
+                  placeholder="you@example.com"
+                />
+              </Field>
+
+              {err && <ErrorBanner message={err} />}
+              {info && <InfoBanner message={info} />}
+
+              <button
+                type="submit"
+                disabled={busy}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-4 py-3 text-sm font-semibold text-[color:var(--primary-foreground)] transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:opacity-60"
+              >
+                <Mail className="h-4 w-4" />
+                {busy ? "Sending…" : "Email me a magic link"}
+              </button>
+              <p className="text-center text-xs text-[color:var(--muted-foreground)]">
+                One-click sign-in. No password needed.
+              </p>
+            </form>
+          )}
         </div>
 
-        <p className="mt-6 text-center text-sm text-[color:var(--muted-foreground)]">
-          Need access?{" "}
-          <a
-            href={CHECKOUT_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]"
-          >
-            Get instant access
-          </a>
-        </p>
+        <div className="mt-6 space-y-2 text-center text-sm text-[color:var(--muted-foreground)]">
+          <p>
+            New here?{" "}
+            <Link to="/signup" className="text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]">
+              Create your account
+            </Link>
+          </p>
+          <p>
+            Haven&apos;t paid yet?{" "}
+            <a
+              href={CHECKOUT_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]"
+            >
+              Get instant access — R99 once-off
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -183,5 +268,21 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       </span>
       {children}
     </label>
+  );
+}
+
+function ErrorBanner({ message }: { message: string }) {
+  return (
+    <div className="rounded-lg border border-[color:var(--destructive)]/40 bg-[color:var(--destructive)]/10 px-3 py-2 text-sm text-[color:var(--destructive)]">
+      {message}
+    </div>
+  );
+}
+
+function InfoBanner({ message }: { message: string }) {
+  return (
+    <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
+      {message}
+    </div>
   );
 }

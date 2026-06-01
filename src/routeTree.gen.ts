@@ -12,11 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TrendingRouteImport } from './routes/trending'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RequestProductRouteImport } from './routes/request-product'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as HowToOrderRouteImport } from './routes/how-to-order'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -33,6 +36,16 @@ const SupportRoute = SupportRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RequestProductRoute = RequestProductRouteImport.update({
@@ -60,6 +73,11 @@ const HowToOrderRoute = HowToOrderRouteImport.update({
   path: '/how-to-order',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -74,11 +92,14 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/how-to-order': typeof HowToOrderRoute
   '/login': typeof LoginRoute
   '/orders': typeof OrdersRoute
   '/products': typeof ProductsRoute
   '/request-product': typeof RequestProductRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/trending': typeof TrendingRoute
@@ -86,11 +107,14 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/how-to-order': typeof HowToOrderRoute
   '/login': typeof LoginRoute
   '/orders': typeof OrdersRoute
   '/products': typeof ProductsRoute
   '/request-product': typeof RequestProductRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/trending': typeof TrendingRoute
@@ -99,11 +123,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/how-to-order': typeof HowToOrderRoute
   '/login': typeof LoginRoute
   '/orders': typeof OrdersRoute
   '/products': typeof ProductsRoute
   '/request-product': typeof RequestProductRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/trending': typeof TrendingRoute
@@ -113,11 +140,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/forgot-password'
     | '/how-to-order'
     | '/login'
     | '/orders'
     | '/products'
     | '/request-product'
+    | '/reset-password'
+    | '/signup'
     | '/sitemap.xml'
     | '/support'
     | '/trending'
@@ -125,11 +155,14 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
+    | '/forgot-password'
     | '/how-to-order'
     | '/login'
     | '/orders'
     | '/products'
     | '/request-product'
+    | '/reset-password'
+    | '/signup'
     | '/sitemap.xml'
     | '/support'
     | '/trending'
@@ -137,11 +170,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/forgot-password'
     | '/how-to-order'
     | '/login'
     | '/orders'
     | '/products'
     | '/request-product'
+    | '/reset-password'
+    | '/signup'
     | '/sitemap.xml'
     | '/support'
     | '/trending'
@@ -150,11 +186,14 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   HowToOrderRoute: typeof HowToOrderRoute
   LoginRoute: typeof LoginRoute
   OrdersRoute: typeof OrdersRoute
   ProductsRoute: typeof ProductsRoute
   RequestProductRoute: typeof RequestProductRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SupportRoute: typeof SupportRoute
   TrendingRoute: typeof TrendingRoute
@@ -181,6 +220,20 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/request-product': {
@@ -218,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HowToOrderRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -238,11 +298,14 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   HowToOrderRoute: HowToOrderRoute,
   LoginRoute: LoginRoute,
   OrdersRoute: OrdersRoute,
   ProductsRoute: ProductsRoute,
   RequestProductRoute: RequestProductRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SupportRoute: SupportRoute,
   TrendingRoute: TrendingRoute,
