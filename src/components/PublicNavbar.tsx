@@ -1,8 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Menu, X, Zap } from "lucide-react";
 import { useState } from "react";
-
-const CHECKOUT_URL = "https://byjbdf-2k.myshopify.com/checkouts/cn/hWNCJl4hotDQ0n05xDu8oPnG/en-za?_r=AQABy_sDJ4mXBCFU5a7Bai_NPknqBl197qdTJdb9mCUKjEM&preview_theme_id=188057157949";
+import { CHECKOUT_URL } from "@/lib/checkout";
 
 export function PublicNavbar() {
   const [open, setOpen] = useState(false);

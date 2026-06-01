@@ -5,16 +5,17 @@ import { StarRatingPills, TrendingSection } from "@/components/landing/Trending"
 import { SalesPanel, FulfilmentPanel } from "@/components/landing/DashboardPreviews";
 import { FloatingDashboardMockup } from "@/components/landing/FloatingDashboardMockup";
 
-export const CHECKOUT_URL = "https://byjbdf-2k.myshopify.com/checkouts/cn/hWNCJl4hotDQ0n05xDu8oPnG/en-za?_r=AQABy_sDJ4mXBCFU5a7Bai_NPknqBl197qdTJdb9mCUKjEM&preview_theme_id=188057157949";
+import { CHECKOUT_URL } from "@/lib/checkout";
+export { CHECKOUT_URL };
 
 export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
       { title: "ZA Supplier Hub — The Products Behind Every Winning SA Dropshipping Store" },
-      { name: "description", content: "Private supplier portal for South African dropshippers. Hand-picked products, real margins, vetted SA suppliers. R99/month." },
+      { name: "description", content: "Private supplier portal for South African dropshippers. Hand-picked products, real margins, vetted SA suppliers. R99 once-off." },
       { property: "og:title", content: "ZA Supplier Hub — Private SA Dropshipping Catalogue" },
-      { property: "og:description", content: "Private supplier portal for South African dropshippers. R99/month, cancel anytime." },
+      { property: "og:description", content: "Private supplier portal for South African dropshippers. R99 once-off, lifetime access." },
     ],
   }),
 });
@@ -62,11 +63,11 @@ function Hero() {
 
           <a href={CHECKOUT_URL} target="_blank" rel="noreferrer"
             className="glass-pill-purple mt-10 inline-flex items-center gap-2 px-7 py-4 text-base">
-            Get Instant Access — R99/month →
+            Get Instant Access — R99 once-off →
           </a>
 
           <p className="mt-4 text-xs text-[#A1A1AA]">
-            Cancel anytime · No contracts · Instant access on payment
+            One payment · Lifetime access · No subscriptions
           </p>
 
           <div className="mt-10 flex flex-col items-center gap-4">
@@ -198,7 +199,7 @@ function Pricing() {
     "Pre-tested ad angles included",
     "Products sourced and validated specifically for the SA market",
     "Direct WhatsApp support",
-    "Cancel anytime, no contracts",
+    "One payment, lifetime access — no subscriptions",
   ];
   return (
     <section id="pricing" className="relative px-4 py-24 sm:px-6 lg:px-8">
@@ -215,7 +216,7 @@ function Pricing() {
           <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#7B5EE8]">Member Access</div>
           <div className="mt-3 flex items-baseline gap-1">
             <span className="text-5xl font-bold tracking-tight text-white">R99</span>
-            <span className="text-sm text-[#A1A1AA]">/month</span>
+            <span className="text-sm text-[#A1A1AA]">once-off</span>
           </div>
           <p className="mt-2 text-sm text-[#A1A1AA]">
             Everything you need to launch and scale your SA dropshipping store.
@@ -236,7 +237,7 @@ function Pricing() {
             className="glass-pill-purple mt-8 flex w-full items-center justify-center gap-2 px-6 py-4 text-base">
             Get Instant Access
           </a>
-          <p className="mt-4 text-center text-xs text-[#A1A1AA]">Cancel anytime · No contracts</p>
+          <p className="mt-4 text-center text-xs text-[#A1A1AA]">One payment · Lifetime access</p>
         </div>
       </div>
     </section>

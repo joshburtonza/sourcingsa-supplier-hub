@@ -4,10 +4,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { verifyAccess } from "@/lib/auth.functions";
 import { useAuth, saveSession } from "@/hooks/use-auth";
+import { CHECKOUT_URL } from "@/lib/checkout";
 import logo from "@/assets/logo.png";
-
-const CHECKOUT_URL =
-  "https://byjbdf-2k.myshopify.com/checkouts/cn/hWNCJl4hotDQ0n05xDu8oPnG/en-za?_r=AQABy_sDJ4mXBCFU5a7Bai_NPknqBl197qdTJdb9mCUKjEM&preview_theme_id=188057157949";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -65,6 +63,11 @@ function LoginPage() {
       }
       if (res.reason === "code") {
         setErr({ kind: "code", message: "Incorrect access code. Check your welcome email." });
+      } else if (res.reason === "server_misconfigured") {
+        setErr({
+          kind: "generic",
+          message: "Sign-in is temporarily disabled — please contact support.",
+        });
       } else {
         setErr({
           kind: "no-order",
