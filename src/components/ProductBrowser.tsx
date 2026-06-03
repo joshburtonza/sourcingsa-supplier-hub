@@ -47,10 +47,16 @@ export function ProductBrowser({
   useEffect(() => {
     (async () => {
       setLoading(true);
-      let q = supabase.from("products").select("*");
+      // Explicit member-safe columns — never select("*") here, that would
+      // ship the internal `supplier_note` field to every member's browser.
+      let q = supabase
+        .from("products")
+        .select("id,name,category,cost_price,sell_price,image_url,images,shopify_url,description,stock_status,active,sales_count,trending")
+        .eq("active", true);
       if (trendingOnly) q = q.order("sales_count", { ascending: false });
       else q = q.order("created_at", { ascending: false });
-      const { data } = await q;
+      const { data, error } = await q;
+      if (error) console.error("[products] load failed", error.message);
       setProducts((data as Product[]) ?? []);
       setLoading(false);
     })();

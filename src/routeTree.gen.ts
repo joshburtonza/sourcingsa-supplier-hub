@@ -21,7 +21,15 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as HowToOrderRouteImport } from './routes/how-to-order'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminSupportRouteImport } from './routes/admin.support'
+import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
+import { Route as AdminProductsRouteImport } from './routes/admin.products'
+import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
+import { Route as AdminMembersRouteImport } from './routes/admin.members'
+import { Route as ApiDropstoreLinkRouteImport } from './routes/api.dropstore.link'
 import { Route as ApiWebhooksShopifyOrdersPaidRouteImport } from './routes/api.webhooks.shopify.orders-paid'
 
 const TrendingRoute = TrendingRouteImport.update({
@@ -84,9 +92,49 @@ const DashboardRoute = DashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSupportRoute = AdminSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminRequestsRoute = AdminRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMembersRoute = AdminMembersRouteImport.update({
+  id: '/members',
+  path: '/members',
+  getParentRoute: () => AdminRoute,
+} as any)
+const ApiDropstoreLinkRoute = ApiDropstoreLinkRouteImport.update({
+  id: '/api/dropstore/link',
+  path: '/api/dropstore/link',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiWebhooksShopifyOrdersPaidRoute =
@@ -98,6 +146,8 @@ const ApiWebhooksShopifyOrdersPaidRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-to-order': typeof HowToOrderRoute
@@ -110,10 +160,18 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/trending': typeof TrendingRoute
+  '/admin/members': typeof AdminMembersRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/requests': typeof AdminRequestsRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/api/dropstore/link': typeof ApiDropstoreLinkRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-to-order': typeof HowToOrderRoute
@@ -126,11 +184,19 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/trending': typeof TrendingRoute
+  '/admin/members': typeof AdminMembersRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/requests': typeof AdminRequestsRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/api/dropstore/link': typeof ApiDropstoreLinkRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
+  '/admin': typeof AdminRouteWithChildren
   '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-to-order': typeof HowToOrderRoute
@@ -143,12 +209,20 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/support': typeof SupportRoute
   '/trending': typeof TrendingRoute
+  '/admin/members': typeof AdminMembersRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/requests': typeof AdminRequestsRoute
+  '/admin/support': typeof AdminSupportRoute
+  '/api/dropstore/link': typeof ApiDropstoreLinkRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
+    | '/admin'
     | '/dashboard'
     | '/forgot-password'
     | '/how-to-order'
@@ -161,10 +235,18 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/support'
     | '/trending'
+    | '/admin/members'
+    | '/admin/orders'
+    | '/admin/products'
+    | '/admin/requests'
+    | '/admin/support'
+    | '/api/dropstore/link'
     | '/api/webhooks/shopify/orders-paid'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
+    | '/admin'
     | '/dashboard'
     | '/forgot-password'
     | '/how-to-order'
@@ -177,10 +259,18 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/support'
     | '/trending'
+    | '/admin/members'
+    | '/admin/orders'
+    | '/admin/products'
+    | '/admin/requests'
+    | '/admin/support'
+    | '/api/dropstore/link'
     | '/api/webhooks/shopify/orders-paid'
   id:
     | '__root__'
     | '/'
+    | '/account'
+    | '/admin'
     | '/dashboard'
     | '/forgot-password'
     | '/how-to-order'
@@ -193,11 +283,19 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/support'
     | '/trending'
+    | '/admin/members'
+    | '/admin/orders'
+    | '/admin/products'
+    | '/admin/requests'
+    | '/admin/support'
+    | '/api/dropstore/link'
     | '/api/webhooks/shopify/orders-paid'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
+  AdminRoute: typeof AdminRouteWithChildren
   DashboardRoute: typeof DashboardRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HowToOrderRoute: typeof HowToOrderRoute
@@ -210,6 +308,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SupportRoute: typeof SupportRoute
   TrendingRoute: typeof TrendingRoute
+  ApiDropstoreLinkRoute: typeof ApiDropstoreLinkRoute
   ApiWebhooksShopifyOrdersPaidRoute: typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 
@@ -299,11 +398,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/support': {
+      id: '/admin/support'
+      path: '/support'
+      fullPath: '/admin/support'
+      preLoaderRoute: typeof AdminSupportRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/requests': {
+      id: '/admin/requests'
+      path: '/requests'
+      fullPath: '/admin/requests'
+      preLoaderRoute: typeof AdminRequestsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/products': {
+      id: '/admin/products'
+      path: '/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/members': {
+      id: '/admin/members'
+      path: '/members'
+      fullPath: '/admin/members'
+      preLoaderRoute: typeof AdminMembersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/api/dropstore/link': {
+      id: '/api/dropstore/link'
+      path: '/api/dropstore/link'
+      fullPath: '/api/dropstore/link'
+      preLoaderRoute: typeof ApiDropstoreLinkRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/webhooks/shopify/orders-paid': {
@@ -316,8 +471,28 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AdminRouteChildren {
+  AdminMembersRoute: typeof AdminMembersRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminProductsRoute: typeof AdminProductsRoute
+  AdminRequestsRoute: typeof AdminRequestsRoute
+  AdminSupportRoute: typeof AdminSupportRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminMembersRoute: AdminMembersRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
+  AdminProductsRoute: AdminProductsRoute,
+  AdminRequestsRoute: AdminRequestsRoute,
+  AdminSupportRoute: AdminSupportRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
+  AdminRoute: AdminRouteWithChildren,
   DashboardRoute: DashboardRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HowToOrderRoute: HowToOrderRoute,
@@ -330,6 +505,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SupportRoute: SupportRoute,
   TrendingRoute: TrendingRoute,
+  ApiDropstoreLinkRoute: ApiDropstoreLinkRoute,
   ApiWebhooksShopifyOrdersPaidRoute: ApiWebhooksShopifyOrdersPaidRoute,
 }
 export const routeTree = rootRouteImport

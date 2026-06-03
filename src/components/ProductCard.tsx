@@ -1,4 +1,10 @@
-import { ExternalLink, Package } from "lucide-react";
+import { useState } from "react";
+import { Package, ShoppingBag } from "lucide-react";
+import { fmtZAR, STOCK_META } from "@/lib/orders";
+import { OrderModal } from "./OrderModal";
+
+// Re-exported for the screens that already import it from here.
+export { fmtZAR };
 
 export type Product = {
   id: string;
@@ -7,13 +13,14 @@ export type Product = {
   cost_price: number;
   sell_price: number;
   image_url: string | null;
-  shopify_url: string;
+  images?: string[] | null;
+  shopify_url?: string | null;
+  description?: string | null;
+  stock_status?: string | null;
+  active?: boolean | null;
   sales_count?: number | null;
   trending?: boolean | null;
 };
-
-export const fmtZAR = (n: number) =>
-  `R${Number(n).toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 function ordinal(n: number) {
   const s = ["th", "st", "nd", "rd"];
@@ -25,32 +32,28 @@ function categoryGradient(category: string): string {
   const map: Record<string, string> = {
     Fitness: "linear-gradient(135deg, #3a0a0a 0%, #7a1212 100%)",
     Beauty: "linear-gradient(135deg, #3a0a24 0%, #8a1d57 100%)",
-    Home: "linear-gradient(135deg, #062a2a 0%, #0e6b6b 100%)",
     Tech: "linear-gradient(135deg, #0a1733 0%, #1e3a8a 100%)",
     "Pet Products": "linear-gradient(135deg, #3a1a05 0%, #9a4a10 100%)",
     Fashion: "linear-gradient(135deg, #1a0a3a 0%, #4a1a8a 100%)",
     "Hair Care": "linear-gradient(135deg, #052e1a 0%, #0d6b3d 100%)",
     Skincare: "linear-gradient(135deg, #3a0a1c 0%, #9a1d44 100%)",
-    Baby: "linear-gradient(135deg, #0a2540 0%, #1e6fa8 100%)",
     "Men's Grooming": "linear-gradient(135deg, #1a1f29 0%, #3a4556 100%)",
     Jewellery: "linear-gradient(135deg, #3a2a05 0%, #a8841a 100%)",
-    "Home and Kitchen": "linear-gradient(135deg, #062a2a 0%, #0e6b6b 100%)",
     "Home & Kitchen": "linear-gradient(135deg, #062a2a 0%, #0e6b6b 100%)",
-    "Tech and Workspace": "linear-gradient(135deg, #0a1733 0%, #1e3a8a 100%)",
-    "Baby and Mom": "linear-gradient(135deg, #0a2540 0%, #1e6fa8 100%)",
     "Baby & Mom": "linear-gradient(135deg, #0a2540 0%, #1e6fa8 100%)",
   };
   return map[category] ?? "linear-gradient(135deg, #111 0%, #1A1A1A 100%)";
 }
 
-export function ProductCard({
-  product,
-  rank,
-}: {
-  product: Product;
-  rank?: number;
-}) {
+export function ProductCard({ product, rank }: { product: Product; rank?: number }) {
+  const [ordering, setOrdering] = useState(false);
   const profit = Number(product.sell_price) - Number(product.cost_price);
+  const margin = product.sell_price > 0 ? Math.round((profit / Number(product.sell_price)) * 100) : 0;
+  const img = product.image_url || product.images?.[0] || null;
+  const stock = product.stock_status ?? "in_stock";
+  const outOfStock = stock === "out_of_stock";
+  const stockMeta = STOCK_META[stock];
+
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] glow-card-hover">
       {rank !== undefined && (
@@ -58,13 +61,15 @@ export function ProductCard({
           {ordinal(rank)}
         </span>
       )}
-      <div
-        className="relative aspect-[4/3] overflow-hidden"
-        style={{ background: categoryGradient(product.category) }}
-      >
-        {product.image_url ? (
+      {product.trending && rank === undefined && (
+        <span className="absolute left-3 top-3 z-10 rounded-full bg-[color:var(--primary)]/90 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg">
+          Trending
+        </span>
+      )}
+      <div className="relative aspect-[4/3] overflow-hidden" style={{ background: categoryGradient(product.category) }}>
+        {img ? (
           <img
-            src={product.image_url}
+            src={img}
             alt={product.name}
             loading="lazy"
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -84,35 +89,44 @@ export function ProductCard({
           </span>
         </div>
 
-        <div className="space-y-1">
-          <div className="text-lg font-bold text-[color:var(--primary)]">
-            {fmtZAR(product.cost_price)}
+        {product.description && (
+          <p className="line-clamp-2 text-sm text-[color:var(--muted-foreground)]">{product.description}</p>
+        )}
+
+        <div className="mt-auto space-y-1">
+          <div className="flex items-baseline gap-2">
+            <span className="text-lg font-bold text-white">{fmtZAR(product.cost_price)}</span>
+            <span className="text-xs text-[color:var(--muted-foreground)]">your cost</span>
           </div>
           <div className="text-sm text-[color:var(--muted-foreground)]">
             Sell for {fmtZAR(product.sell_price)}
           </div>
         </div>
 
-        <span className="inline-flex w-fit items-center rounded-md bg-[color:var(--success)]/15 px-2 py-1 text-xs font-semibold text-[color:var(--success)]">
-          {fmtZAR(profit)} profit
-        </span>
-
-        {typeof product.sales_count === "number" && product.sales_count > 0 && (
-          <span className="text-xs text-[color:var(--muted-foreground)]">
-            {product.sales_count.toLocaleString()} sold
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center rounded-md bg-[color:var(--success)]/15 px-2 py-1 text-xs font-semibold text-[color:var(--success)]">
+            {fmtZAR(profit)} profit · {margin}%
           </span>
-        )}
+          {stockMeta && stock !== "in_stock" && (
+            <span className={`text-xs font-medium ${stockMeta.cls}`}>{stockMeta.label}</span>
+          )}
+          {typeof product.sales_count === "number" && product.sales_count > 0 && (
+            <span className="text-xs text-[color:var(--muted-foreground)]">{product.sales_count.toLocaleString()} sold</span>
+          )}
+        </div>
 
-        <a
-          href={product.shopify_url}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-auto inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn"
+        <button
+          type="button"
+          disabled={outOfStock}
+          onClick={() => setOrdering(true)}
+          className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Order Now
-          <ExternalLink className="h-4 w-4" />
-        </a>
+          <ShoppingBag className="h-4 w-4" />
+          {outOfStock ? "Out of stock" : "Order Now"}
+        </button>
       </div>
+
+      {ordering && <OrderModal product={product} onClose={() => setOrdering(false)} />}
     </article>
   );
 }

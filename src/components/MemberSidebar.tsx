@@ -10,6 +10,8 @@ import {
   LogOut,
   Menu,
   X,
+  User,
+  LayoutDashboard,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import logo from "@/assets/logo.png";
@@ -22,6 +24,7 @@ const NAV: Item[] = [
   { to: "/trending", label: "Trending Products", icon: Flame },
   { to: "/orders", label: "Orders", icon: Package },
   { to: "/request-product", label: "Request a Product", icon: PlusCircle },
+  { to: "/account", label: "Account", icon: User },
   { to: "/support", label: "Support", icon: MessageCircle },
 ];
 
@@ -33,16 +36,23 @@ function Logo() {
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { isAdmin } = useAuth();
+  const items: Item[] = isAdmin
+    ? [...NAV, { to: "/admin", label: "Admin", icon: LayoutDashboard }]
+    : NAV;
   return (
     <nav className="flex flex-col gap-1">
-      {NAV.map(({ to, label, icon: Icon }) => {
-        const active = path === to;
+      {items.map(({ to, label, icon: Icon }) => {
+        const active = path === to || (to === "/admin" && path.startsWith("/admin"));
+        const isAdminLink = to === "/admin";
         return (
           <Link
             key={to}
             to={to}
             onClick={onNavigate}
             className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+              isAdminLink ? "mt-1 border-t border-[color:var(--border)] pt-3.5" : ""
+            } ${
               active
                 ? "bg-[color:var(--primary)]/15 text-[color:var(--primary)]"
                 : "text-[color:var(--foreground)] hover:bg-white/5 hover:text-[color:var(--primary)]"
