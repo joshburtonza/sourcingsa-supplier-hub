@@ -18,95 +18,316 @@ export type Database = {
         Row: {
           amount: number
           category: string | null
+          courier: string | null
           created_at: string
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
           email: string
           id: string
+          notes: string | null
           ordered_at: string
+          paid: boolean
+          product_id: string | null
           product_name: string
+          quantity: number
+          shipping_address: string | null
+          shipping_city: string | null
+          shipping_postal_code: string | null
+          shipping_province: string | null
           shopify_order_id: string | null
           status: Database["public"]["Enums"]["order_status"]
+          tracking_number: string | null
+          unit_cost: number
+          updated_at: string
         }
         Insert: {
           amount?: number
           category?: string | null
+          courier?: string | null
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           email: string
           id?: string
+          notes?: string | null
           ordered_at?: string
+          paid?: boolean
+          product_id?: string | null
           product_name: string
+          quantity?: number
+          shipping_address?: string | null
+          shipping_city?: string | null
+          shipping_postal_code?: string | null
+          shipping_province?: string | null
           shopify_order_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          tracking_number?: string | null
+          unit_cost?: number
+          updated_at?: string
         }
         Update: {
           amount?: number
           category?: string | null
+          courier?: string | null
           created_at?: string
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
           email?: string
           id?: string
+          notes?: string | null
           ordered_at?: string
+          paid?: boolean
+          product_id?: string | null
           product_name?: string
+          quantity?: number
+          shipping_address?: string | null
+          shipping_city?: string | null
+          shipping_postal_code?: string | null
+          shipping_province?: string | null
           shopify_order_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
+          tracking_number?: string | null
+          unit_cost?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      paid_customers: {
+        Row: {
+          amount: number | null
+          consumed_at: string | null
+          currency: string | null
+          email: string
+          paid_at: string
+          shopify_order_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          consumed_at?: string | null
+          currency?: string | null
+          email: string
+          paid_at?: string
+          shopify_order_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          consumed_at?: string | null
+          currency?: string | null
+          email?: string
+          paid_at?: string
+          shopify_order_id?: string | null
+        }
+        Relationships: []
+      }
+      product_requests: {
+        Row: {
+          admin_reply: string | null
+          created_at: string
+          id: string
+          image_url: string | null
+          notes: string | null
+          product_name: string
+          product_url: string | null
+          quote_cost: number | null
+          quote_sell: number | null
+          requester_email: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_reply?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          notes?: string | null
+          product_name: string
+          product_url?: string | null
+          quote_cost?: number | null
+          quote_sell?: number | null
+          requester_email: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_reply?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          notes?: string | null
+          product_name?: string
+          product_url?: string | null
+          quote_cost?: number | null
+          quote_sell?: number | null
+          requester_email?: string
+          status?: string
+          updated_at?: string
         }
         Relationships: []
       }
       products: {
         Row: {
+          active: boolean
           category: string
           cost_price: number
           created_at: string
+          description: string | null
           id: string
           image_url: string | null
+          images: Json
           name: string
           sales_count: number
           sell_price: number
-          shopify_url: string
+          shopify_url: string | null
+          stock_status: string
+          supplier_note: string | null
           trending: boolean
+          updated_at: string
         }
         Insert: {
+          active?: boolean
           category: string
           cost_price: number
           created_at?: string
+          description?: string | null
           id?: string
           image_url?: string | null
+          images?: Json
           name: string
           sales_count?: number
           sell_price: number
-          shopify_url: string
+          shopify_url?: string | null
+          stock_status?: string
+          supplier_note?: string | null
           trending?: boolean
+          updated_at?: string
         }
         Update: {
+          active?: boolean
           category?: string
           cost_price?: number
           created_at?: string
+          description?: string | null
           id?: string
           image_url?: string | null
+          images?: Json
           name?: string
           sales_count?: number
           sell_price?: number
-          shopify_url?: string
+          shopify_url?: string | null
+          stock_status?: string
+          supplier_note?: string | null
           trending?: boolean
+          updated_at?: string
         }
         Relationships: []
       }
       profiles: {
         Row: {
           created_at: string
+          dropstore_account_id: string | null
+          dropstore_email: string | null
+          dropstore_linked_at: string | null
+          dropstore_tier: string | null
           email: string | null
           full_name: string | null
           id: string
+          phone: string | null
+          store_name: string | null
+          store_url: string | null
+          updated_at: string
         }
         Insert: {
           created_at?: string
+          dropstore_account_id?: string | null
+          dropstore_email?: string | null
+          dropstore_linked_at?: string | null
+          dropstore_tier?: string | null
           email?: string | null
           full_name?: string | null
           id: string
+          phone?: string | null
+          store_name?: string | null
+          store_url?: string | null
+          updated_at?: string
         }
         Update: {
           created_at?: string
+          dropstore_account_id?: string | null
+          dropstore_email?: string | null
+          dropstore_linked_at?: string | null
+          dropstore_tier?: string | null
           email?: string | null
           full_name?: string | null
           id?: string
+          phone?: string | null
+          store_name?: string | null
+          store_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      support_tickets: {
+        Row: {
+          admin_reply: string | null
+          created_at: string
+          email: string
+          id: string
+          message: string
+          status: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          admin_reply?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          message: string
+          status?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          admin_reply?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -115,9 +336,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      place_order: {
+        Args: {
+          p_customer_email: string
+          p_customer_name: string
+          p_customer_phone: string
+          p_notes: string
+          p_product_id: string
+          p_quantity: number
+          p_shipping_address: string
+          p_shipping_city: string
+          p_shipping_postal_code: string
+          p_shipping_province: string
+        }
+        Returns: string
+      }
+      register_paid_user: {
+        Args: { p_email: string; p_full_name?: string; p_password: string }
+        Returns: Json
+      }
     }
     Enums: {
+      app_role: "admin" | "approved"
       order_status:
         | "unfulfilled"
         | "processing"
@@ -251,6 +498,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "approved"],
       order_status: [
         "unfulfilled",
         "processing",
