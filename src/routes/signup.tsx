@@ -10,7 +10,7 @@ export const Route = createFileRoute("/signup")({
   component: SignupPage,
   head: () => ({
     meta: [
-      { title: "Create your account — ZA Supplier Hub" },
+      { title: "Create your account, ZA Supplier Hub" },
       { name: "description", content: "Create your ZA Supplier Hub member account." },
     ],
   }),
@@ -96,7 +96,7 @@ function SignupPage() {
                   rel="noreferrer"
                   className="text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]"
                 >
-                  Get instant access — R99 once-off →
+                  Get instant access, R99 once-off →
                 </a>
               </p>
             </div>

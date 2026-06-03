@@ -20,9 +20,9 @@ export const Route = createFileRoute("/")({
   component: Landing,
   head: () => ({
     meta: [
-      { title: "ZA Supplier Hub — The Products Behind Every Winning SA Dropshipping Store" },
+      { title: "ZA Supplier Hub, The Products Behind Every Winning SA Dropshipping Store" },
       { name: "description", content: "Private supplier portal for South African dropshippers. Hand-picked products, real margins, local suppliers, fast local delivery. R99 once-off, lifetime access." },
-      { property: "og:title", content: "ZA Supplier Hub — Private SA Dropshipping Catalogue" },
+      { property: "og:title", content: "ZA Supplier Hub, Private SA Dropshipping Catalogue" },
       { property: "og:description", content: "Hand-picked products, real margins, local fulfilment. R99 once-off, lifetime access." },
     ],
   }),
@@ -64,11 +64,11 @@ function Hero() {
 
           <p className="mt-6 max-w-2xl text-base text-[#A1A1AA] sm:text-lg">
             Stop guessing what to sell and gambling on 6-week shipping. Get hand-picked products
-            with real margins — sourced locally, shipped fast, straight to your South African customers.
+            with real margins, sourced locally, shipped fast, straight to your South African customers.
           </p>
 
           <a href={CHECKOUT_URL} target="_blank" rel="noreferrer" className="glass-pill-purple mt-10 inline-flex items-center gap-2 px-7 py-4 text-base">
-            Get instant access — R99 once-off <ArrowRight className="h-4 w-4" />
+            Get instant access, R99 once-off <ArrowRight className="h-4 w-4" />
           </a>
           <p className="mt-4 text-xs text-[#A1A1AA]">One payment · Lifetime access · No subscriptions</p>
 
@@ -131,7 +131,7 @@ function TrustStrip() {
 }
 
 const STEPS = [
-  { icon: PackageSearch, title: "Browse the catalogue", body: "Hand-picked, SA-validated products with cost prices and suggested sell prices — your margin is clear before you list." },
+  { icon: PackageSearch, title: "Browse the catalogue", body: "Hand-picked, SA-validated products with cost prices and suggested sell prices, your margin is clear before you list." },
   { icon: ShoppingBag, title: "Order for your customer", body: "Made a sale? Place the order in seconds and enter your customer's delivery details. You pay the cost price." },
   { icon: Truck, title: "We ship, you profit", body: "We ship direct to your customer anywhere in SA and you track every order live. No stock, no warehouse, no stress." },
 ];
@@ -176,7 +176,7 @@ function WhatYouGet() {
             <FeatureBlock
               eyebrow="The catalogue"
               title="Your private product catalogue."
-              description="Hand-picked products validated for the SA market — real demand, real margins. New winning products added every week so your store never goes stale."
+              description="Hand-picked products validated for the SA market, real demand, real margins. New winning products added every week so your store never goes stale."
               bullets={["SA-validated products", "Cost + suggested sell prices", "Weekly new products", "Ready-to-use descriptions"]}
             />
           </Reveal>
@@ -184,7 +184,7 @@ function WhatYouGet() {
             <FeatureBlock
               eyebrow="The fulfilment"
               title="We ship it. You keep the profit."
-              description="Your customer orders from your store. You order from us at cost. We ship direct to them, anywhere in SA — and you track every order live from your dashboard."
+              description="Your customer orders from your store. You order from us at cost. We ship direct to them, anywhere in SA, and you track every order live from your dashboard."
               bullets={["Local SA suppliers", "No stock to hold", "Live order tracking", "Ships nationwide"]}
             />
           </Reveal>
@@ -210,7 +210,7 @@ function FeatureBlock({ eyebrow, title, description, bullets }: { eyebrow: strin
 }
 
 const VALUES = [
-  { icon: Wallet, value: "R99", label: "Once-off — lifetime access, no subscriptions" },
+  { icon: Wallet, value: "R99", label: "Once-off, lifetime access, no subscriptions" },
   { icon: MapPin, value: "Local", label: "SA suppliers and nationwide delivery" },
   { icon: PackageSearch, value: "Zero", label: "Stock to buy or hold up front" },
   { icon: Repeat, value: "Weekly", label: "New winning products added" },
@@ -239,11 +239,11 @@ function Pricing() {
     "Full private product catalogue access",
     "Weekly new winning products added",
     "Cost prices + suggested sell prices",
-    "Order fulfilment — we ship to your customer",
+    "Order fulfilment, we ship to your customer",
     "Live order tracking in your dashboard",
     "Request products we don't stock yet",
     "Products validated for the SA market",
-    "One payment, lifetime access — no subscriptions",
+    "One payment, lifetime access, no subscriptions",
   ];
   return (
     <section id="pricing" className="relative px-4 py-24 sm:px-6 lg:px-8">
@@ -278,7 +278,7 @@ function Pricing() {
 }
 
 const FAQS = [
-  { q: "What exactly do I get for R99?", a: "Lifetime access to the private product catalogue — cost prices, suggested sell prices and descriptions — plus the ability to order for your customers and have us ship to them. One payment, no subscriptions." },
+  { q: "What exactly do I get for R99?", a: "Lifetime access to the private product catalogue, cost prices, suggested sell prices and descriptions, plus the ability to order for your customers and have us ship to them. One payment, no subscriptions." },
   { q: "How does fulfilment work?", a: "When you make a sale, you order the product from us at the cost price and enter your customer's delivery details. We ship it straight to them, anywhere in South Africa, and you track it from your dashboard." },
   { q: "Do I need to hold stock?", a: "No. You only order once you've made a sale, so there's no stock to buy up front and nothing to store." },
   { q: "What if a product I want isn't listed?", a: "Use the Request a Product tool inside the portal. We source it from a vetted SA supplier and send you a quote, usually within 48 hours." },

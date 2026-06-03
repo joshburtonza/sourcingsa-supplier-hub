@@ -14,7 +14,7 @@ export const Route = createFileRoute("/request-product")({
   ),
   head: () => ({
     meta: [
-      { title: "Request a Product — Members" },
+      { title: "Request a Product, Members" },
       { name: "description", content: "Request a product and we'll source it." },
     ],
   }),
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/request-product")({
 const STEPS = [
   { icon: FileText, title: "Send the product details", body: "Share a link, image, or description of the product you'd like to source." },
   { icon: Search, title: "We source & validate it", body: "Our team contacts trusted SA suppliers and confirms quality and stock within 48 hours." },
-  { icon: Tag, title: "You get a quote", body: "Receive a clear quote — cost price, suggested sell price, and your margin." },
+  { icon: Tag, title: "You get a quote", body: "Receive a clear quote, cost price, suggested sell price, and your margin." },
 ];
 
 type RequestRow = {
@@ -102,7 +102,7 @@ function Page() {
       <header className="max-w-2xl">
         <h1 className="text-2xl font-bold text-white sm:text-3xl">Request a Product</h1>
         <p className="mt-3 text-[color:var(--foreground)]">
-          Can&apos;t find what you&apos;re looking for? We source products on request — send the
+          Can&apos;t find what you&apos;re looking for? We source products on request, send the
           details and we&apos;ll find the best local supplier and pricing for you.
         </p>
       </header>
@@ -136,7 +136,7 @@ function Page() {
             {err && <div className="rounded-lg border border-[color:var(--destructive)]/40 bg-[color:var(--destructive)]/10 px-3 py-2 text-sm text-[color:var(--destructive)]">{err}</div>}
             {done && (
               <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
-                <CheckCircle2 className="h-4 w-4" /> Request received — we&apos;ll be in touch within 48 hours.
+                <CheckCircle2 className="h-4 w-4" /> Request received, we&apos;ll be in touch within 48 hours.
               </div>
             )}
             <button type="submit" disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:opacity-60">

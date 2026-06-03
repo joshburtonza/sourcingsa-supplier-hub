@@ -10,7 +10,7 @@ export const Route = createFileRoute("/admin/members")({
       <AdminMembers />
     </AdminShell>
   ),
-  head: () => ({ meta: [{ title: "Members — Admin" }] }),
+  head: () => ({ meta: [{ title: "Members, Admin" }] }),
 });
 
 type Profile = {
@@ -127,7 +127,7 @@ function AdminMembers() {
                   return (
                     <tr key={p.id} className="border-t border-[color:var(--border)]">
                       <td className="px-5 py-3">
-                        <div className="text-white">{p.email ?? "—"}</div>
+                        <div className="text-white">{p.email ?? "-"}</div>
                         <div className="text-xs text-[color:var(--muted-foreground)]">{p.full_name || p.store_name || ""}</div>
                       </td>
                       <td className="px-5 py-3 text-[color:var(--muted-foreground)]">
@@ -135,7 +135,7 @@ function AdminMembers() {
                           <span className="inline-flex items-center gap-1.5 text-xs">
                             <Link2 className="h-3.5 w-3.5" /> {p.dropstore_email}{p.dropstore_account_id ? " ✓" : ""}
                           </span>
-                        ) : "—"}
+                        ) : "-"}
                       </td>
                       <td className="px-5 py-3 text-[color:var(--muted-foreground)]">{new Date(p.created_at).toLocaleDateString("en-ZA")}</td>
                       <td className="px-5 py-3">

@@ -68,7 +68,7 @@ export function useAuth(): AuthState {
     let cancelled = false;
 
     // Seed from the persisted session (Supabase already restored from
-    // localStorage at this point — persistSession:true in the client).
+    // localStorage at this point, persistSession:true in the client).
     supabase.auth.getSession().then(async ({ data }) => {
       if (cancelled) return;
       setSession(data.session);
@@ -79,7 +79,7 @@ export function useAuth(): AuthState {
       if (!cancelled) setLoading(false);
     });
 
-    // Live subscription — fires on sign-in, sign-out, token refresh, etc.
+    // Live subscription, fires on sign-in, sign-out, token refresh, etc.
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, s) => {
       if (cancelled) return;
       setSession(s);

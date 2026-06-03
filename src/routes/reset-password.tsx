@@ -8,7 +8,7 @@ export const Route = createFileRoute("/reset-password")({
   component: ResetPasswordPage,
   head: () => ({
     meta: [
-      { title: "Set new password — ZA Supplier Hub" },
+      { title: "Set new password, ZA Supplier Hub" },
       { name: "description", content: "Set a new password for your ZA Supplier Hub account." },
     ],
   }),

@@ -7,7 +7,7 @@ export const Route = createFileRoute("/forgot-password")({
   component: ForgotPage,
   head: () => ({
     meta: [
-      { title: "Reset your password — ZA Supplier Hub" },
+      { title: "Reset your password, ZA Supplier Hub" },
       { name: "description", content: "Reset your ZA Supplier Hub password." },
     ],
   }),
@@ -77,7 +77,7 @@ function ForgotPage() {
             <>
               <h1 className="text-2xl font-semibold text-white">Reset your password</h1>
               <p className="mt-1 text-sm text-[color:var(--muted-foreground)]">
-                Enter the email you signed up with — we&apos;ll send you a reset
+                Enter the email you signed up with, we&apos;ll send you a reset
                 link.
               </p>
               <form onSubmit={onSubmit} className="mt-6 space-y-4">

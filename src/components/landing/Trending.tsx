@@ -43,7 +43,7 @@ export function TrendingSection() {
 
         <div className="mt-10 flex justify-center">
           <a href="#pricing" className="glass-pill inline-flex px-5 py-2.5 text-sm">
-            Unlock all trending products — R99 once-off →
+            Unlock all trending products, R99 once-off →
           </a>
         </div>
       </div>

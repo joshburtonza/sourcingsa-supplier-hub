@@ -47,7 +47,7 @@ export function ProductBrowser({
   useEffect(() => {
     (async () => {
       setLoading(true);
-      // Explicit member-safe columns — never select("*") here, that would
+      // Explicit member-safe columns, never select("*") here, that would
       // ship the internal `supplier_note` field to every member's browser.
       let q = supabase
         .from("products")

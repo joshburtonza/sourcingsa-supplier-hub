@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ElementType, type ReactNode } from "r
 import Lenis from "lenis";
 
 /**
- * Lenis smooth scroll — client-only (instantiated in an effect so SSR on
+ * Lenis smooth scroll, client-only (instantiated in an effect so SSR on
  * Cloudflare Workers is untouched). Disabled when the visitor prefers
  * reduced motion. No wrapper DOM, so it never interferes with layout.
  */

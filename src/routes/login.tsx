@@ -10,7 +10,7 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
   head: () => ({
     meta: [
-      { title: "Sign in — ZA Supplier Hub" },
+      { title: "Sign in, ZA Supplier Hub" },
       { name: "description", content: "Member sign in for ZA Supplier Hub." },
     ],
   }),
@@ -75,7 +75,7 @@ function LoginPage() {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim().toLowerCase(),
         options: {
-          // We don't auto-create an account here — magic links only work
+          // We don't auto-create an account here, magic links only work
           // for existing accounts. Sign-up goes through the dedicated
           // signup flow so the user can pick a password.
           shouldCreateUser: false,
@@ -251,7 +251,7 @@ function LoginPage() {
               rel="noreferrer"
               className="text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]"
             >
-              Get instant access — R99 once-off
+              Get instant access, R99 once-off
             </a>
           </p>
         </div>

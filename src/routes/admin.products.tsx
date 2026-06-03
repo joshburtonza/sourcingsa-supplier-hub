@@ -12,7 +12,7 @@ export const Route = createFileRoute("/admin/products")({
       <AdminProducts />
     </AdminShell>
   ),
-  head: () => ({ meta: [{ title: "Products — Admin" }] }),
+  head: () => ({ meta: [{ title: "Products, Admin" }] }),
 });
 
 function AdminProducts() {

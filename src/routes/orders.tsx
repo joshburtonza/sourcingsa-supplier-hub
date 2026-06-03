@@ -14,7 +14,7 @@ export const Route = createFileRoute("/orders")({
   ),
   head: () => ({
     meta: [
-      { title: "Orders — Members" },
+      { title: "Orders, Members" },
       { name: "description", content: "All your orders in one place." },
     ],
   }),
@@ -167,7 +167,7 @@ function OrdersPage() {
                     <tr key={o.id} onClick={() => setActive(o)} className="cursor-pointer border-t border-[color:var(--border)] transition-colors hover:bg-white/[0.03]">
                       <td className="px-6 py-3 font-mono text-xs text-[color:var(--muted-foreground)]">{shortId(o.id)}</td>
                       <td className="px-6 py-3 text-white">{o.product_name}{o.quantity > 1 ? <span className="text-[color:var(--muted-foreground)]"> ×{o.quantity}</span> : null}</td>
-                      <td className="px-6 py-3 text-[color:var(--muted-foreground)]">{o.customer_name ?? "—"}</td>
+                      <td className="px-6 py-3 text-[color:var(--muted-foreground)]">{o.customer_name ?? "-"}</td>
                       <td className="px-6 py-3 text-[color:var(--muted-foreground)]">{new Date(o.ordered_at).toLocaleDateString("en-ZA")}</td>
                       <td className="px-6 py-3 text-white">{fmtZAR(Number(o.amount))}</td>
                       <td className="px-6 py-3">
@@ -225,7 +225,7 @@ function OrderDetail({ order, onClose }: { order: Order; onClose: () => void }) 
         <div className="mt-6">
           <div className="flex items-center gap-2 text-sm font-semibold text-white"><MapPin className="h-4 w-4 text-[color:var(--primary)]" /> Ship to</div>
           <div className="mt-2 space-y-0.5 text-sm text-[color:var(--muted-foreground)]">
-            <div className="text-white">{order.customer_name ?? "—"}</div>
+            <div className="text-white">{order.customer_name ?? "-"}</div>
             {order.customer_phone && <div>{order.customer_phone}</div>}
             {order.shipping_address && <div>{order.shipping_address}</div>}
             <div>{[order.shipping_city, order.shipping_province, order.shipping_postal_code].filter(Boolean).join(", ") || ""}</div>

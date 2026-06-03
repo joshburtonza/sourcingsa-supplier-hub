@@ -10,7 +10,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
  *   Format: JSON
  *   URL:    https://<your-deployed-domain>/api/webhooks/shopify/orders-paid
  *
- * Required env vars (set in the deploy target — Cloudflare Workers vars,
+ * Required env vars (set in the deploy target, Cloudflare Workers vars,
  * Vercel env, or wherever this ships):
  *   - SHOPIFY_WEBHOOK_SECRET      Shopify's webhook signing secret. Used
  *                                 to verify the X-Shopify-Hmac-Sha256
@@ -41,18 +41,18 @@ export const Route = createFileRoute("/api/webhooks/shopify/orders-paid")({
       POST: async ({ request }) => {
         const secret = process.env.SHOPIFY_WEBHOOK_SECRET;
         if (!secret) {
-          console.error("[shopify-webhook] SHOPIFY_WEBHOOK_SECRET is not set — refusing.");
+          console.error("[shopify-webhook] SHOPIFY_WEBHOOK_SECRET is not set, refusing.");
           return new Response("Server not configured", { status: 500 });
         }
 
-        // Read the raw body BEFORE parsing — HMAC must be computed
+        // Read the raw body BEFORE parsing, HMAC must be computed
         // against the exact bytes Shopify signed.
         const raw = await request.text();
         const headerSig = request.headers.get("x-shopify-hmac-sha256") ?? "";
 
         const valid = await verifyShopifyHmac(raw, headerSig, secret);
         if (!valid) {
-          console.error("[shopify-webhook] HMAC mismatch — rejecting.");
+          console.error("[shopify-webhook] HMAC mismatch, rejecting.");
           return new Response("Invalid signature", { status: 401 });
         }
 
@@ -67,7 +67,7 @@ export const Route = createFileRoute("/api/webhooks/shopify/orders-paid")({
         const email = (order.customer?.email ?? order.email ?? "").trim().toLowerCase();
         if (!email) {
           console.error("[shopify-webhook] No customer email on order", { id: order.id });
-          // 200 so Shopify stops retrying — we can't action this order.
+          // 200 so Shopify stops retrying, we can't action this order.
           return new Response("No email on order", { status: 200 });
         }
 
@@ -144,14 +144,14 @@ function constantTimeEqual(a: string, b: string): boolean {
  * Idempotent member provisioning. Creates the auth user if missing
  * (email pre-confirmed so a one-click magic link works), then grants
  * `approved` on user_roles. The UNIQUE(user_id, role) constraint on
- * user_roles makes the insert a no-op on retries — Shopify's at-least-
+ * user_roles makes the insert a no-op on retries, Shopify's at-least-
  * once delivery becomes effectively at-most-once.
  */
 async function provisionApprovedMember(args: { email: string; orderId: string }): Promise<void> {
   const { email, orderId } = args;
 
   // Look up an existing auth user by email. listUsers is paginated;
-  // we use the perPage:1 trick after a `filter` on email — but
+  // we use the perPage:1 trick after a `filter` on email, but
   // supabase-js doesn't expose email filtering on listUsers, so the
   // pragmatic path is to attempt createUser and let it 422 if the
   // user already exists, then look them up.
@@ -168,7 +168,7 @@ async function provisionApprovedMember(args: { email: string; orderId: string })
   } else if (created.error) {
     // Supabase returns 422 with code 'email_exists' / 'user_already_exists'
     // when the email is already on the auth.users table. Fall back to
-    // resolving the existing id by paging through users — small enough
+    // resolving the existing id by paging through users, small enough
     // user base that this is fine for now.
     const existing = await findUserIdByEmail(email);
     if (!existing) {
@@ -205,7 +205,7 @@ async function provisionApprovedMember(args: { email: string; orderId: string })
   }
 
   // Email a magic link so they don't have to remember a password they
-  // never set. If this fails we still consider provisioning a success —
+  // never set. If this fails we still consider provisioning a success -
   // the account + role exist, they can also use the standard password-
   // reset flow to set a password.
   try {

@@ -10,7 +10,7 @@ export const Route = createFileRoute("/trending")({
   ),
   head: () => ({
     meta: [
-      { title: "Trending Products — Members" },
+      { title: "Trending Products, Members" },
       { name: "description", content: "Top-selling products this week." },
     ],
   }),

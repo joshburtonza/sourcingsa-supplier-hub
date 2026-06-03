@@ -11,7 +11,7 @@ export const Route = createFileRoute("/admin/orders")({
       <AdminOrders />
     </AdminShell>
   ),
-  head: () => ({ meta: [{ title: "Orders — Admin" }] }),
+  head: () => ({ meta: [{ title: "Orders, Admin" }] }),
 });
 
 type Order = {
@@ -188,7 +188,7 @@ function OrderEditor({ order, onClose, onSaved }: { order: Order; onClose: () =>
         <div className="mt-5 rounded-xl border border-[color:var(--border)] bg-white/[0.02] p-4 text-sm">
           <div className="font-semibold text-white">Ship to</div>
           <div className="mt-1 text-[color:var(--muted-foreground)]">
-            <div className="text-white">{order.customer_name ?? "—"}</div>
+            <div className="text-white">{order.customer_name ?? "-"}</div>
             {order.customer_phone && <div>{order.customer_phone}</div>}
             {order.shipping_address && <div>{order.shipping_address}</div>}
             <div>{[order.shipping_city, order.shipping_province, order.shipping_postal_code].filter(Boolean).join(", ")}</div>

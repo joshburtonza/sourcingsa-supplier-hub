@@ -115,15 +115,28 @@ export function ProductCard({ product, rank }: { product: Product; rank?: number
           )}
         </div>
 
-        <button
-          type="button"
-          disabled={outOfStock}
-          onClick={() => setOrdering(true)}
-          className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <ShoppingBag className="h-4 w-4" />
-          {outOfStock ? "Out of stock" : "Order Now"}
-        </button>
+        {product.shopify_url ? (
+          <a
+            href={product.shopify_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => { if (outOfStock) e.preventDefault(); }}
+            className={`mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn ${outOfStock ? "pointer-events-none opacity-50" : ""}`}
+          >
+            <ShoppingBag className="h-4 w-4" />
+            {outOfStock ? "Out of stock" : "Order Now"}
+          </a>
+        ) : (
+          <button
+            type="button"
+            disabled={outOfStock}
+            onClick={() => setOrdering(true)}
+            className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ShoppingBag className="h-4 w-4" />
+            {outOfStock ? "Out of stock" : "Order Now"}
+          </button>
+        )}
       </div>
 
       {ordering && <OrderModal product={product} onClose={() => setOrdering(false)} />}

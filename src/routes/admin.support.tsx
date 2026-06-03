@@ -10,7 +10,7 @@ export const Route = createFileRoute("/admin/support")({
       <AdminSupport />
     </AdminShell>
   ),
-  head: () => ({ meta: [{ title: "Support — Admin" }] }),
+  head: () => ({ meta: [{ title: "Support, Admin" }] }),
 });
 
 type Ticket = {

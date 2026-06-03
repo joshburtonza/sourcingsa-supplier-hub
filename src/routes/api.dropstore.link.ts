@@ -10,7 +10,7 @@ import type { Database } from "@/integrations/supabase/types";
  * order history can be tied to their DropStore identity.
  *
  * Why not call DropStore's /api/auth/login to verify?
- *   DropStore login enforces a 3-device cap with fingerprinting — a server
+ *   DropStore login enforces a 3-device cap with fingerprinting, a server
  *   verification call would consume a device slot and can LOCK the member
  *   out of DropStore. So we never touch the login flow.
  *
@@ -26,7 +26,7 @@ import type { Database } from "@/integrations/supabase/types";
  *
  * Auth: the caller must send their Supabase access token as
  * `Authorization: Bearer <token>`. The profile is updated with that same
- * user-scoped client, so RLS ("Update own profile") is enforced — no
+ * user-scoped client, so RLS ("Update own profile") is enforced, no
  * service-role key for this app's own DB is required.
  */
 export const Route = createFileRoute("/api/dropstore/link")({
@@ -59,7 +59,7 @@ export const Route = createFileRoute("/api/dropstore/link")({
           return json({ ok: false, error: "Enter a valid DropStore email." }, 400);
         }
 
-        // User-scoped client — RLS applies. Used to verify the caller and to
+        // User-scoped client, RLS applies. Used to verify the caller and to
         // update *their own* profile.
         const userClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
           global: { headers: { Authorization: `Bearer ${token}` } },
@@ -69,7 +69,7 @@ export const Route = createFileRoute("/api/dropstore/link")({
         const { data: claimsData, error: claimsErr } = await userClient.auth.getClaims(token);
         const userId = claimsData?.claims?.sub as string | undefined;
         if (claimsErr || !userId) {
-          return json({ ok: false, error: "Session expired — sign in again." }, 401);
+          return json({ ok: false, error: "Session expired, sign in again." }, 401);
         }
 
         // Optional read-only verification against the DropStore DB.
@@ -102,7 +102,7 @@ export const Route = createFileRoute("/api/dropstore/link")({
               tier = (account as { package_tier?: string }).package_tier ?? null;
             }
           } catch (err) {
-            // Verification is best-effort — fall back to a soft link rather
+            // Verification is best-effort, fall back to a soft link rather
             // than blocking the member if the DropStore DB is unreachable.
             console.error("[dropstore-link] verification error (soft-linking)", err);
           }

@@ -10,7 +10,7 @@ export const Route = createFileRoute("/how-to-order")({
   ),
   head: () => ({
     meta: [
-      { title: "How to Order — Supplier Portal" },
+      { title: "How to Order, Supplier Portal" },
       { name: "description", content: "Step-by-step ordering instructions." },
     ],
   }),

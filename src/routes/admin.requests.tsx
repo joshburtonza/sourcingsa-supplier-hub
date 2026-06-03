@@ -11,7 +11,7 @@ export const Route = createFileRoute("/admin/requests")({
       <AdminRequests />
     </AdminShell>
   ),
-  head: () => ({ meta: [{ title: "Requests — Admin" }] }),
+  head: () => ({ meta: [{ title: "Requests, Admin" }] }),
 });
 
 type Req = {

@@ -10,7 +10,7 @@ export const Route = createFileRoute("/admin")({
       <Overview />
     </AdminShell>
   ),
-  head: () => ({ meta: [{ title: "Admin — ZA Supplier Hub" }] }),
+  head: () => ({ meta: [{ title: "Admin, ZA Supplier Hub" }] }),
 });
 
 type Counts = {
@@ -58,7 +58,7 @@ function Overview() {
     <div className="space-y-8">
       <header>
         <h1 className="text-2xl font-bold text-white sm:text-3xl">Overview</h1>
-        <p className="mt-1 text-sm text-[color:var(--muted-foreground)]">Run the hub — catalogue, orders, members and requests.</p>
+        <p className="mt-1 text-sm text-[color:var(--muted-foreground)]">Run the hub, catalogue, orders, members and requests.</p>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -84,7 +84,7 @@ function Card({ to, icon, label, value, accent }: { to: string; icon: React.Reac
   return (
     <Link to={to} className={`rounded-xl border bg-[color:var(--card)] p-5 transition-colors hover:border-[color:var(--primary)] ${accent ? "border-[color:var(--primary)]/40" : "border-[color:var(--border)]"}`}>
       <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-[color:var(--primary)]/15 text-[color:var(--primary)] [&>svg]:h-5 [&>svg]:w-5">{icon}</div>
-      <div className="text-2xl font-semibold text-white">{value ?? "—"}</div>
+      <div className="text-2xl font-semibold text-white">{value ?? "-"}</div>
       <div className="mt-1 text-xs uppercase tracking-wider text-[color:var(--muted-foreground)]">{label}</div>
     </Link>
   );

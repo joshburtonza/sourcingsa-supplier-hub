@@ -13,7 +13,7 @@ import { MemberShell } from "./MemberSidebar";
  *      at the Shopify checkout. The user has an auth account but
  *      hasn't paid (no `approved` role on user_roles), so we don't
  *      expose the catalogue UI to them. RLS would block the queries
- *      anyway — this just gives them a clean message instead of an
+ *      anyway, this just gives them a clean message instead of an
  *      empty data table.
  *   4. Signed in, approved  → render the page inside MemberShell.
  */
@@ -49,7 +49,7 @@ export function ProtectedShell({ children }: { children: ReactNode }) {
             <h1 className="text-2xl font-semibold text-white">Pending Approval</h1>
             <p className="mt-3 text-sm text-[color:var(--muted-foreground)]">
               Your account is ready, but member access unlocks once your one-off
-              payment lands. Use the link below to complete the purchase — you&apos;ll
+              payment lands. Use the link below to complete the purchase, you&apos;ll
               get in immediately.
             </p>
             <a
@@ -58,7 +58,7 @@ export function ProtectedShell({ children }: { children: ReactNode }) {
               rel="noreferrer"
               className="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-[color:var(--primary)] px-4 py-3 text-sm font-semibold text-[color:var(--primary-foreground)] transition-colors hover:bg-[color:var(--primary-hover)] glow-btn"
             >
-              Get Instant Access — R99 once-off
+              Get Instant Access, R99 once-off
             </a>
             <button
               type="button"

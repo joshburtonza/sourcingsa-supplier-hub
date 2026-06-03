@@ -210,7 +210,7 @@ export function OrderModal({
                 {busy ? "Placing order…" : `Place order · ${fmtZAR(total)}`}
               </button>
               <p className="text-center text-xs text-[color:var(--muted-foreground)]">
-                You pay the cost price — you keep whatever your customer paid you.
+                You pay the cost price, you keep whatever your customer paid you.
               </p>
             </form>
           </>

@@ -13,7 +13,7 @@ export const Route = createFileRoute("/account")({
   ),
   head: () => ({
     meta: [
-      { title: "Account — Members" },
+      { title: "Account, Members" },
       { name: "description", content: "Manage your profile and DropStore link." },
     ],
   }),
@@ -107,7 +107,7 @@ function Page() {
       const { data: sess } = await supabase.auth.getSession();
       const token = sess.session?.access_token;
       if (!token) {
-        setLinkMsg({ ok: false, text: "Session expired — sign in again." });
+        setLinkMsg({ ok: false, text: "Session expired, sign in again." });
         return;
       }
       const res = await fetch("/api/dropstore/link", {
@@ -126,7 +126,7 @@ function Page() {
           ? `Linked and verified${out.tier ? ` · ${out.tier} plan` : ""}.`
           : "Linked. We'll match your order history to this DropStore email.",
       });
-      // refresh profile — never null out the just-linked state on a failed
+      // refresh profile, never null out the just-linked state on a failed
       // read (would show "Linked" while the banner disappears).
       if (user?.id) {
         const { data, error } = await supabase
@@ -138,7 +138,7 @@ function Page() {
         else if (data) setProfile(data as Profile);
       }
     } catch {
-      setLinkMsg({ ok: false, text: "Network error — try again." });
+      setLinkMsg({ ok: false, text: "Network error, try again." });
     } finally {
       setLinking(false);
     }

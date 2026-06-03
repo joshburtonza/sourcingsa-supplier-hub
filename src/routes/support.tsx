@@ -19,7 +19,7 @@ export const Route = createFileRoute("/support")({
   ),
   head: () => ({
     meta: [
-      { title: "Support — Members" },
+      { title: "Support, Members" },
       { name: "description", content: "Get help with your account and orders." },
     ],
   }),
@@ -29,7 +29,7 @@ const FAQS = [
   { q: "How do I place an order?", a: "Browse Find Products or Trending Products, choose a product, click Order Now, and enter your customer's delivery details. We ship straight to them and you track it under Orders." },
   { q: "How long does delivery take?", a: "Most local SA orders are processed within 24 hours and delivered to your customer within a few business days, depending on the courier and location." },
   { q: "Can I request a product that's not listed?", a: "Yes. Use the Request a Product page and we'll source it from a vetted SA supplier within 48 hours." },
-  { q: "What do I pay?", a: "You pay the cost price shown on each product. You keep whatever your own customer paid you — that difference is your profit." },
+  { q: "What do I pay?", a: "You pay the cost price shown on each product. You keep whatever your own customer paid you, that difference is your profit." },
   { q: "How do I get help with a specific order?", a: "Open a ticket below with your order ID, or WhatsApp us, and we'll respond during business hours." },
 ];
 
@@ -137,7 +137,7 @@ function Page() {
               {err && <div className="rounded-lg border border-[color:var(--destructive)]/40 bg-[color:var(--destructive)]/10 px-3 py-2 text-sm text-[color:var(--destructive)]">{err}</div>}
               {done && (
                 <div className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">
-                  <CheckCircle2 className="h-4 w-4" /> Ticket submitted — we&apos;ll reply by email.
+                  <CheckCircle2 className="h-4 w-4" /> Ticket submitted, we&apos;ll reply by email.
                 </div>
               )}
               <button type="submit" disabled={busy} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:opacity-60">

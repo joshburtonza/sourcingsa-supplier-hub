@@ -25,7 +25,7 @@ export const Route = createFileRoute("/dashboard")({
   ),
   head: () => ({
     meta: [
-      { title: "Dashboard — Members" },
+      { title: "Dashboard, Members" },
       { name: "description", content: "Your member dashboard." },
     ],
   }),
@@ -72,7 +72,7 @@ function Dashboard() {
   const name = (email ?? "Member").split("@")[0];
   const memberSince = user?.created_at
     ? new Date(user.created_at).toLocaleDateString("en-ZA", { year: "numeric", month: "short", day: "numeric" })
-    : "—";
+    : "-";
   const recent = orders.slice(0, 5);
 
   return (
