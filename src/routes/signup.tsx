@@ -10,11 +10,13 @@ export const Route = createFileRoute("/signup")({
   component: SignupPage,
   head: () => ({
     meta: [
-      { title: "Create your account, ZA Supplier Hub" },
-      { name: "description", content: "Create your ZA Supplier Hub member account." },
+      { title: "Activate your account | ZA Supplier Hub" },
+      { name: "description", content: "Set your login details after paying for ZA Supplier Hub access." },
     ],
   }),
 });
+
+type RegisterResult = { ok: boolean; error?: string };
 
 function SignupPage() {
   const { session, loading } = useAuth();
@@ -25,16 +27,26 @@ function SignupPage() {
   const [showPw, setShowPw] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [done, setDone] = useState(false);
+  const [needsPayment, setNeedsPayment] = useState(false);
 
+  // Already signed in -> straight to the dashboard.
   useEffect(() => {
     if (!loading && session) navigate({ to: "/dashboard" });
   }, [loading, session, navigate]);
 
+  // Prefill the email Shopify redirected with (?email=), if present.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const q = new URLSearchParams(window.location.search).get("email");
+    if (q) setEmail(q);
+  }, []);
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setErr(null);
-    if (!email || !password) {
+    setNeedsPayment(false);
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !password) {
       setErr("Email and password are required.");
       return;
     }
@@ -44,20 +56,52 @@ function SignupPage() {
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
-        password,
-        options: {
-          data: { full_name: fullName.trim() || null },
-          emailRedirectTo:
-            typeof window !== "undefined" ? `${window.location.origin}/dashboard` : undefined,
-        },
+      // Payment-gated account creation. The DB function checks the email is
+      // in paid_customers before it will create the account.
+      const { data, error } = await (
+        supabase as unknown as {
+          rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: RegisterResult | null; error: { message: string } | null }>;
+        }
+      ).rpc("register_paid_user", {
+        p_email: cleanEmail,
+        p_password: password,
+        p_full_name: fullName.trim() || null,
       });
+
       if (error) {
         setErr(error.message ?? "Sign up failed.");
         return;
       }
-      setDone(true);
+
+      const result = data ?? { ok: false, error: "unknown" };
+      if (!result.ok) {
+        if (result.error === "no_payment") {
+          setNeedsPayment(true);
+          return;
+        }
+        if (result.error === "exists") {
+          setErr("You already have an account with this email. Please sign in instead.");
+          return;
+        }
+        if (result.error === "invalid_input") {
+          setErr("Please enter a valid email and a password of at least 8 characters.");
+          return;
+        }
+        setErr("Sign up failed. Please try again.");
+        return;
+      }
+
+      // Account created + approved. Sign in with the password they just set.
+      const { error: signInErr } = await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      });
+      if (signInErr) {
+        // Account exists now; if auto sign-in hiccups, send them to login.
+        navigate({ to: "/login" });
+        return;
+      }
+      navigate({ to: "/dashboard" });
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
@@ -80,101 +124,100 @@ function SignupPage() {
           <img src={logo} alt="ZA Supplier Hub" className="h-auto w-[160px] object-contain" />
         </div>
         <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-8 glow-card">
-          {done ? (
-            <div className="text-center">
-              <h1 className="text-2xl font-semibold text-white">Check your email</h1>
-              <p className="mt-3 text-sm text-[color:var(--muted-foreground)]">
-                We&apos;ve sent a confirmation link to{" "}
-                <span className="font-medium text-white">{email}</span>. Click it
-                to activate your account, then sign in.
-              </p>
-              <p className="mt-4 text-xs text-[color:var(--muted-foreground)]">
-                Member access unlocks once your one-off payment lands.{" "}
+          <h1 className="text-2xl font-semibold text-white">Activate your account</h1>
+          <p className="mt-1 text-sm text-[color:var(--muted-foreground)]">
+            Paid already? Set your login details below to get instant access.
+          </p>
+
+          <form onSubmit={onSubmit} className="mt-6 space-y-4">
+            <Field label="Full name">
+              <input
+                type="text"
+                autoComplete="name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="input focus-glow"
+                placeholder="Your name"
+              />
+            </Field>
+            <Field label="Email">
+              <input
+                required
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input focus-glow"
+                placeholder="The email you paid with"
+              />
+            </Field>
+            <Field label="Password">
+              <div className="relative">
+                <input
+                  required
+                  type={showPw ? "text" : "password"}
+                  autoComplete="new-password"
+                  minLength={8}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input focus-glow pr-11"
+                  placeholder="At least 8 characters"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--muted-foreground)] hover:text-[color:var(--primary)]"
+                  aria-label={showPw ? "Hide password" : "Show password"}
+                >
+                  {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </Field>
+
+            {needsPayment && (
+              <div className="rounded-lg border border-[color:var(--primary)]/40 bg-[color:var(--primary)]/10 px-3 py-3 text-sm text-white">
+                We couldn&apos;t find a payment for this email. Access is a once-off R99.
                 <a
                   href={CHECKOUT_URL}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]"
+                  className="mt-2 block font-semibold text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]"
                 >
                   Get instant access, R99 once-off →
                 </a>
-              </p>
-            </div>
-          ) : (
-            <>
-              <h1 className="text-2xl font-semibold text-white">Create your account</h1>
-              <p className="mt-1 text-sm text-[color:var(--muted-foreground)]">
-                Sign up to access the supplier portal after payment.
-              </p>
+                <span className="mt-2 block text-xs text-[color:var(--muted-foreground)]">
+                  Just paid? Give it a moment and try again, or use the exact email from your receipt.
+                </span>
+              </div>
+            )}
 
-              <form onSubmit={onSubmit} className="mt-6 space-y-4">
-                <Field label="Full name">
-                  <input
-                    type="text"
-                    autoComplete="name"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="input focus-glow"
-                    placeholder="Your name"
-                  />
-                </Field>
-                <Field label="Email">
-                  <input
-                    required
-                    type="email"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="input focus-glow"
-                    placeholder="you@example.com"
-                  />
-                </Field>
-                <Field label="Password">
-                  <div className="relative">
-                    <input
-                      required
-                      type={showPw ? "text" : "password"}
-                      autoComplete="new-password"
-                      minLength={8}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="input focus-glow pr-11"
-                      placeholder="At least 8 characters"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPw((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[color:var(--muted-foreground)] hover:text-[color:var(--primary)]"
-                      aria-label={showPw ? "Hide password" : "Show password"}
-                    >
-                      {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                </Field>
+            {err && (
+              <div className="rounded-lg border border-[color:var(--destructive)]/40 bg-[color:var(--destructive)]/10 px-3 py-2 text-sm text-[color:var(--destructive)]">
+                {err}
+              </div>
+            )}
 
-                {err && (
-                  <div className="rounded-lg border border-[color:var(--destructive)]/40 bg-[color:var(--destructive)]/10 px-3 py-2 text-sm text-[color:var(--destructive)]">
-                    {err}
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={busy}
-                  className="w-full rounded-lg bg-[color:var(--primary)] px-4 py-3 text-sm font-semibold text-[color:var(--primary-foreground)] transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:opacity-60"
-                >
-                  {busy ? "Creating your account…" : "Create account"}
-                </button>
-              </form>
-            </>
-          )}
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full rounded-lg bg-[color:var(--primary)] px-4 py-3 text-sm font-semibold text-[color:var(--primary-foreground)] transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:opacity-60"
+            >
+              {busy ? "Setting up your account…" : "Activate account"}
+            </button>
+          </form>
         </div>
 
         <p className="mt-6 text-center text-sm text-[color:var(--muted-foreground)]">
-          Already have an account?{" "}
+          Already activated?{" "}
           <Link to="/login" className="text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]">
             Sign in
           </Link>
+        </p>
+        <p className="mt-2 text-center text-sm text-[color:var(--muted-foreground)]">
+          Haven&apos;t paid yet?{" "}
+          <a href={CHECKOUT_URL} target="_blank" rel="noreferrer" className="text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]">
+            Get instant access, R99 once-off
+          </a>
         </p>
       </div>
     </div>

@@ -5,34 +5,23 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 /**
  * Shopify `orders/paid` webhook handler.
  *
- * Configure in Shopify Admin → Settings → Notifications → Webhooks:
+ * Records the paying customer's email into `public.paid_customers` so the
+ * payment-gated signup (`register_paid_user`) will let them create an
+ * account. We do NOT create the account here, the customer sets their own
+ * password at /signup after paying.
+ *
+ * Configure in Shopify Admin -> Settings -> Notifications -> Webhooks:
  *   Event: Order payment
  *   Format: JSON
- *   URL:    https://<your-deployed-domain>/api/webhooks/shopify/orders-paid
+ *   URL:    https://<deployed-domain>/api/webhooks/shopify/orders-paid
  *
- * Required env vars (set in the deploy target, Cloudflare Workers vars,
- * Vercel env, or wherever this ships):
- *   - SHOPIFY_WEBHOOK_SECRET      Shopify's webhook signing secret. Used
- *                                 to verify the X-Shopify-Hmac-Sha256
- *                                 header against the raw request body.
- *   - SUPABASE_URL                Already required by client.server.ts.
- *   - SUPABASE_SERVICE_ROLE_KEY   Service-role key (bypasses RLS). Used
- *                                 to provision the auth user + grant
- *                                 the approved role.
+ * Required env vars on the deploy target (Cloudflare Workers vars):
+ *   - SHOPIFY_WEBHOOK_SECRET      Verifies the X-Shopify-Hmac-Sha256 header.
+ *   - SUPABASE_URL                (client.server.ts)
+ *   - SUPABASE_SERVICE_ROLE_KEY   Writes paid_customers (bypasses RLS).
  *
- * Flow:
- *   1. Verify HMAC signature against the raw body (Shopify spec).
- *   2. Parse the order JSON, extract the customer's email.
- *   3. Find or create the auth.users row for that email
- *      (`supabaseAdmin.auth.admin.createUser` with email_confirm:true so
- *       they don't need to confirm before the magic-link sign-in works).
- *   4. Grant `approved` role on `user_roles` (idempotent on the
- *      composite unique key, so retries don't double-insert).
- *   5. Send a magic link to that email so they can sign in.
- *
- * Returns 200 on success. Returns 401 on bad HMAC. Returns 200 on most
- * non-fatal errors (e.g. user already provisioned) so Shopify doesn't
- * retry forever; logs loudly for debugging.
+ * Returns 200 on success, 401 on bad HMAC, 200 on non-fatal errors so
+ * Shopify's retry loop doesn't hammer + clobber logs.
  */
 
 export const Route = createFileRoute("/api/webhooks/shopify/orders-paid")({
@@ -45,8 +34,7 @@ export const Route = createFileRoute("/api/webhooks/shopify/orders-paid")({
           return new Response("Server not configured", { status: 500 });
         }
 
-        // Read the raw body BEFORE parsing, HMAC must be computed
-        // against the exact bytes Shopify signed.
+        // HMAC must be computed against the exact bytes Shopify signed.
         const raw = await request.text();
         const headerSig = request.headers.get("x-shopify-hmac-sha256") ?? "";
 
@@ -67,22 +55,24 @@ export const Route = createFileRoute("/api/webhooks/shopify/orders-paid")({
         const email = (order.customer?.email ?? order.email ?? "").trim().toLowerCase();
         if (!email) {
           console.error("[shopify-webhook] No customer email on order", { id: order.id });
-          // 200 so Shopify stops retrying, we can't action this order.
           return new Response("No email on order", { status: 200 });
         }
 
         try {
-          await provisionApprovedMember({ email, orderId: String(order.id ?? "") });
+          await recordPayment({
+            email,
+            orderId: String(order.id ?? ""),
+            amount: parseAmount(order.total_price ?? order.current_total_price),
+            currency: order.currency ?? null,
+          });
           return new Response("ok", { status: 200 });
         } catch (err) {
-          console.error("[shopify-webhook] provisioning failed", {
+          console.error("[shopify-webhook] recording payment failed", {
             email,
             orderId: order.id,
             err: err instanceof Error ? err.message : err,
           });
-          // Still 200: a provisioning bug shouldn't trigger Shopify's
-          // retry loop (which clobbers logs). We rely on the loud
-          // console.error + the eventual admin-side reconciliation.
+          // 200 so Shopify stops retrying; loud log for reconciliation.
           return new Response("ok-with-warning", { status: 200 });
         }
       },
@@ -96,13 +86,53 @@ type ShopifyOrder = {
   id?: number | string;
   email?: string;
   customer?: { email?: string };
+  total_price?: string | number;
+  current_total_price?: string | number;
+  currency?: string;
   [key: string]: unknown;
 };
 
+function parseAmount(v: string | number | undefined): number | null {
+  if (v == null) return null;
+  const n = typeof v === "number" ? v : Number.parseFloat(v);
+  return Number.isFinite(n) ? n : null;
+}
+
 /**
- * HMAC-SHA256(body, secret) → base64. Compared in constant-time
- * against the X-Shopify-Hmac-Sha256 header. Uses Web Crypto so it
- * runs on Cloudflare Workers and Vercel Functions alike.
+ * Upsert the paid email into paid_customers (idempotent on the email PK, so
+ * Shopify's at-least-once delivery is effectively at-most-once). Never
+ * overwrites consumed_at, so re-delivery of an old order can't reset an
+ * already-activated member.
+ */
+async function recordPayment(args: {
+  email: string;
+  orderId: string;
+  amount: number | null;
+  currency: string | null;
+}): Promise<void> {
+  const { email, orderId, amount, currency } = args;
+  const { error } = await (
+    supabaseAdmin as unknown as {
+      from: (t: string) => {
+        upsert: (
+          row: Record<string, unknown>,
+          opts: { onConflict: string },
+        ) => Promise<{ error: { message: string } | null }>;
+      };
+    }
+  )
+    .from("paid_customers")
+    .upsert(
+      { email, shopify_order_id: orderId, amount, currency },
+      { onConflict: "email" },
+    );
+
+  if (error) throw new Error(`paid_customers upsert failed: ${error.message}`);
+}
+
+/**
+ * HMAC-SHA256(body, secret) -> base64, compared in constant time against
+ * the X-Shopify-Hmac-Sha256 header. Web Crypto so it runs on Workers.
  */
 async function verifyShopifyHmac(rawBody: string, headerSig: string, secret: string): Promise<boolean> {
   if (!headerSig) return false;
@@ -138,95 +168,4 @@ function constantTimeEqual(a: string, b: string): boolean {
     diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   }
   return diff === 0;
-}
-
-/**
- * Idempotent member provisioning. Creates the auth user if missing
- * (email pre-confirmed so a one-click magic link works), then grants
- * `approved` on user_roles. The UNIQUE(user_id, role) constraint on
- * user_roles makes the insert a no-op on retries, Shopify's at-least-
- * once delivery becomes effectively at-most-once.
- */
-async function provisionApprovedMember(args: { email: string; orderId: string }): Promise<void> {
-  const { email, orderId } = args;
-
-  // Look up an existing auth user by email. listUsers is paginated;
-  // we use the perPage:1 trick after a `filter` on email, but
-  // supabase-js doesn't expose email filtering on listUsers, so the
-  // pragmatic path is to attempt createUser and let it 422 if the
-  // user already exists, then look them up.
-  let userId: string | null = null;
-
-  const created = await supabaseAdmin.auth.admin.createUser({
-    email,
-    email_confirm: true,
-    user_metadata: { provisioned_by: "shopify-orders-paid", shopify_order_id: orderId },
-  });
-
-  if (created.data?.user?.id) {
-    userId = created.data.user.id;
-  } else if (created.error) {
-    // Supabase returns 422 with code 'email_exists' / 'user_already_exists'
-    // when the email is already on the auth.users table. Fall back to
-    // resolving the existing id by paging through users, small enough
-    // user base that this is fine for now.
-    const existing = await findUserIdByEmail(email);
-    if (!existing) {
-      throw new Error(`createUser failed: ${created.error.message}`);
-    }
-    userId = existing;
-  }
-
-  if (!userId) {
-    throw new Error("Could not resolve user_id for provisioning");
-  }
-
-  // Grant the approved role. UPSERT-style: ON CONFLICT DO NOTHING via
-  // the unique constraint, so retries are safe. We use untyped client
-  // here because user_roles isn't in the generated Database types yet.
-  const { error: insertErr } = await (
-    supabaseAdmin as unknown as {
-      from: (t: string) => {
-        upsert: (
-          row: Record<string, unknown>,
-          opts: { onConflict: string; ignoreDuplicates: boolean },
-        ) => Promise<{ error: { message: string } | null }>;
-      };
-    }
-  )
-    .from("user_roles")
-    .upsert(
-      { user_id: userId, role: "approved" },
-      { onConflict: "user_id,role", ignoreDuplicates: true },
-    );
-
-  if (insertErr) {
-    throw new Error(`user_roles upsert failed: ${insertErr.message}`);
-  }
-
-  // Email a magic link so they don't have to remember a password they
-  // never set. If this fails we still consider provisioning a success -
-  // the account + role exist, they can also use the standard password-
-  // reset flow to set a password.
-  try {
-    await supabaseAdmin.auth.admin.generateLink({
-      type: "magiclink",
-      email,
-    });
-  } catch (err) {
-    console.warn("[shopify-webhook] magic-link send failed (non-fatal)", err);
-  }
-}
-
-async function findUserIdByEmail(email: string): Promise<string | null> {
-  // listUsers returns the first 50 by default. For the early days this
-  // is fine; once the user base outgrows that we should switch to a
-  // dedicated lookup RPC. The page-walking version is a 5-min add when
-  // needed.
-  const { data } = await supabaseAdmin.auth.admin.listUsers({ perPage: 200 });
-  const target = email.toLowerCase();
-  for (const u of data.users ?? []) {
-    if ((u.email ?? "").toLowerCase() === target) return u.id;
-  }
-  return null;
 }
