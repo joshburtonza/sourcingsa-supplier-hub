@@ -40,6 +40,7 @@ type CartCtx = {
   remove: (id: string) => void;
   clear: () => void;
   checkoutUrl: () => string | null;
+  email: string | null;
   open: boolean;
   setOpen: (o: boolean) => void;
 };
@@ -52,7 +53,7 @@ function variantFrom(p: AddInput): string | null {
   return m ? m[1] : null;
 }
 
-export function CartProvider({ children }: { children: ReactNode }) {
+export function CartProvider({ children, email = null }: { children: ReactNode; email?: string | null }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [open, setOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -119,7 +120,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const checkoutUrl = () => {
     if (items.length === 0) return null;
-    return STORE_BASE + items.map((i) => `${i.variantId}:${i.qty}`).join(",");
+    const base = STORE_BASE + items.map((i) => `${i.variantId}:${i.qty}`).join(",");
+    // Carry the member's hub email so the orders/paid webhook can attribute the
+    // order to their hub login even if they use a different email at checkout.
+    return email ? `${base}?note=${encodeURIComponent(`ZASH:${email}`)}` : base;
   };
 
   const value = useMemo<CartCtx>(
@@ -132,11 +136,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       remove,
       clear,
       checkoutUrl,
+      email,
       open,
       setOpen,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [items, open],
+    [items, open, email],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

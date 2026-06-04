@@ -70,7 +70,8 @@ function ProductDetail() {
   const outOfStock = stock === "out_of_stock";
   const stockMeta = STOCK_META[stock];
   const buyHref = product.checkout_url ?? product.shopify_url ?? null;
-  const buyNow = buyHref ? buyHref.replace(/:1$/, `:${qty}`) : null;
+  const note = cart?.email ? `?note=${encodeURIComponent(`ZASH:${cart.email}`)}` : "";
+  const buyNow = buyHref ? buyHref.replace(/:1$/, `:${qty}`) + note : null;
 
   return (
     <div className="space-y-6">

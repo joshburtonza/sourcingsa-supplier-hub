@@ -80,7 +80,7 @@ export function MemberShell({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CartProvider>
+    <CartProvider email={user?.email ?? null}>
     <div className="min-h-screen">
       {/* Desktop cart button (floating, top-right) */}
       <div className="fixed right-6 top-5 z-30 hidden lg:block">
