@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { CHECKOUT_URL } from "@/lib/checkout";
 import { MemberShell } from "./MemberSidebar";
+import { ChangePasswordGate } from "./ChangePasswordGate";
 
 /**
  * Wraps every member-only page. Three render paths:
@@ -18,7 +19,7 @@ import { MemberShell } from "./MemberSidebar";
  *   4. Signed in, approved  → render the page inside MemberShell.
  */
 export function ProtectedShell({ children }: { children: ReactNode }) {
-  const { session, isApproved, loading, signOut } = useAuth();
+  const { session, isApproved, mustChangePassword, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -73,6 +74,10 @@ export function ProtectedShell({ children }: { children: ReactNode }) {
         </div>
       </div>
     );
+  }
+
+  if (mustChangePassword) {
+    return <ChangePasswordGate userId={session.user.id} />;
   }
 
   return <MemberShell>{children}</MemberShell>;

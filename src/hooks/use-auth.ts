@@ -4,8 +4,9 @@
  * Replaces the previous localStorage-only "portal session" gate (which
  * stored {email, verifiedAt} after a shared-code check that anyone with
  * the code could pass). This hook subscribes to live session updates,
- * resolves the `approved` / `admin` roles from `user_roles`, and exposes
- * a signOut helper that fully clears the session.
+ * resolves the `approved` / `admin` roles from `user_roles`, exposes the
+ * `must_change_password` flag (set on bulk-provisioned accounts that share
+ * a temporary password), and a signOut helper that fully clears the session.
  */
 import { useEffect, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
@@ -20,6 +21,8 @@ export interface AuthState {
   isApproved: boolean;
   /** True when the user has the `admin` role. */
   isAdmin: boolean;
+  /** True when the account was provisioned with a shared temp password and must set its own. */
+  mustChangePassword: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
 }
@@ -28,9 +31,6 @@ type RoleRow = { role: "admin" | "approved" };
 
 async function fetchRoles(userId: string): Promise<{ approved: boolean; admin: boolean }> {
   try {
-    // user_roles isn't in the generated Database type yet (migration is
-    // pending application by the team). Cast through unknown so the
-    // build doesn't choke before the types are regenerated.
     const { data } = await (
       supabase as unknown as {
         from: (t: string) => {
@@ -49,10 +49,30 @@ async function fetchRoles(userId: string): Promise<{ approved: boolean; admin: b
       admin: rows.some((r) => r.role === "admin"),
     };
   } catch {
-    // Pre-migration the table doesn't exist → no roles. Caller treats
-    // every signed-in user as "not yet approved" until the migration
-    // runs and the user is granted.
     return { approved: false, admin: false };
+  }
+}
+
+async function fetchMustChange(userId: string): Promise<boolean> {
+  try {
+    const { data } = await (
+      supabase as unknown as {
+        from: (t: string) => {
+          select: (cols: string) => {
+            eq: (col: string, val: string) => {
+              maybeSingle: () => Promise<{ data: { must_change_password: boolean } | null }>;
+            };
+          };
+        };
+      }
+    )
+      .from("profiles")
+      .select("must_change_password")
+      .eq("id", userId)
+      .maybeSingle();
+    return Boolean(data?.must_change_password);
+  } catch {
+    return false;
   }
 }
 
@@ -62,20 +82,26 @@ export function useAuth(): AuthState {
     approved: false,
     admin: false,
   });
+  const [mustChange, setMustChange] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
+
+    async function hydrate(userId: string) {
+      const [r, mc] = await Promise.all([fetchRoles(userId), fetchMustChange(userId)]);
+      if (!cancelled) {
+        setRoles(r);
+        setMustChange(mc);
+      }
+    }
 
     // Seed from the persisted session (Supabase already restored from
     // localStorage at this point, persistSession:true in the client).
     supabase.auth.getSession().then(async ({ data }) => {
       if (cancelled) return;
       setSession(data.session);
-      if (data.session?.user?.id) {
-        const r = await fetchRoles(data.session.user.id);
-        if (!cancelled) setRoles(r);
-      }
+      if (data.session?.user?.id) await hydrate(data.session.user.id);
       if (!cancelled) setLoading(false);
     });
 
@@ -83,22 +109,21 @@ export function useAuth(): AuthState {
     //
     // The callback must stay synchronous and must NOT await a supabase query
     // inside itself. The v2 client holds an internal lock while running
-    // onAuthStateChange handlers; calling another supabase method here (e.g.
-    // fetchRoles -> user_roles select) needs the same lock and deadlocks —
-    // signInWithPassword never resolves and the UI hangs on "Signing in...".
-    // Deferring the query with setTimeout(0) runs it after the lock releases.
+    // onAuthStateChange handlers; calling another supabase method here needs
+    // the same lock and deadlocks — signInWithPassword never resolves and the
+    // UI hangs on "Signing in...". Deferring with setTimeout(0) runs the
+    // queries after the lock releases.
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       if (cancelled) return;
       setSession(s);
       if (s?.user?.id) {
         const uid = s.user.id;
         setTimeout(() => {
-          fetchRoles(uid).then((r) => {
-            if (!cancelled) setRoles(r);
-          });
+          void hydrate(uid);
         }, 0);
       } else {
         setRoles({ approved: false, admin: false });
+        setMustChange(false);
       }
     });
 
@@ -121,6 +146,7 @@ export function useAuth(): AuthState {
     email: user?.email ?? null,
     isApproved: roles.approved,
     isAdmin: roles.admin,
+    mustChangePassword: mustChange,
     loading,
     signOut: async () => {
       await supabase.auth.signOut();
