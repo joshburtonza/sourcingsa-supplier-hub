@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ShoppingBag, ArrowLeft, Package, Check } from "lucide-react";
+import { ShoppingBag, ArrowLeft, Package, Check, Plus, Minus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProtectedShell } from "@/components/ProtectedShell";
+import { useCart } from "@/lib/cart";
 import { fmtZAR, STOCK_META } from "@/lib/orders";
 import type { Product } from "@/components/ProductCard";
 
@@ -19,7 +20,9 @@ const COLS =
 
 function ProductDetail() {
   const { id } = Route.useParams();
+  const cart = useCart();
   const [product, setProduct] = useState<Product | null>(null);
+  const [qty, setQty] = useState(1);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -67,6 +70,7 @@ function ProductDetail() {
   const outOfStock = stock === "out_of_stock";
   const stockMeta = STOCK_META[stock];
   const buyHref = product.checkout_url ?? product.shopify_url ?? null;
+  const buyNow = buyHref ? buyHref.replace(/:1$/, `:${qty}`) : null;
 
   return (
     <div className="space-y-6">
@@ -123,26 +127,45 @@ function ProductDetail() {
             <li className="flex items-center gap-2"><Check className="h-4 w-4 text-[color:var(--primary)]" strokeWidth={3} /> Secure once-off checkout</li>
           </ul>
 
-          <div className="mt-6">
+          <div className="mt-6 space-y-3">
             {stockMeta && stock !== "in_stock" && (
-              <div className={`mb-2 text-sm font-medium ${stockMeta.cls}`}>{stockMeta.label}</div>
+              <div className={`text-sm font-medium ${stockMeta.cls}`}>{stockMeta.label}</div>
             )}
-            {buyHref && !outOfStock ? (
-              <a
-                href={buyHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn sm:w-auto"
-              >
-                <ShoppingBag className="h-5 w-5" /> Order Now
-              </a>
-            ) : (
+
+            {outOfStock ? (
               <button disabled className="inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-6 py-3.5 text-base font-semibold text-white opacity-50 sm:w-auto">
                 <ShoppingBag className="h-5 w-5" /> Out of stock
               </button>
+            ) : (
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="inline-flex items-center rounded-lg border border-[color:var(--border)]">
+                  <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="grid h-12 w-12 place-items-center text-[color:var(--muted-foreground)] hover:text-white" aria-label="Decrease quantity"><Minus className="h-4 w-4" /></button>
+                  <span className="w-12 text-center text-base font-semibold text-white">{qty}</span>
+                  <button onClick={() => setQty((q) => Math.min(999, q + 1))} className="grid h-12 w-12 place-items-center text-[color:var(--muted-foreground)] hover:text-white" aria-label="Increase quantity"><Plus className="h-4 w-4" /></button>
+                </div>
+                {cart && (
+                  <button
+                    onClick={() => cart.add(product, qty)}
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn sm:flex-none"
+                  >
+                    <Plus className="h-5 w-5" /> Add to cart
+                  </button>
+                )}
+                {buyNow && (
+                  <a
+                    href={buyNow}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-[color:var(--primary)] px-6 py-3 text-base font-semibold text-[color:var(--primary)] transition-colors hover:bg-[color:var(--primary)]/10 sm:flex-none"
+                  >
+                    <ShoppingBag className="h-5 w-5" /> Buy now
+                  </a>
+                )}
+              </div>
             )}
-            <p className="mt-3 text-xs text-[color:var(--muted-foreground)]">
-              You pay {fmtZAR(cost)} at checkout. Resell to your customer for {fmtZAR(sell)}.
+
+            <p className="text-xs text-[color:var(--muted-foreground)]">
+              You pay {fmtZAR(cost * qty)} for {qty} {qty > 1 ? "units" : "unit"} at checkout. Resell each for {fmtZAR(sell)}.
             </p>
           </div>
         </div>

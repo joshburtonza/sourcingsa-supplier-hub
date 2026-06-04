@@ -14,6 +14,8 @@ import {
   LayoutDashboard,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { CartProvider } from "@/lib/cart";
+import { CartDrawer, CartButton } from "./CartDrawer";
 import logo from "@/assets/logo.png";
 
 type Item = { to: string; label: string; icon: typeof Home };
@@ -78,7 +80,13 @@ export function MemberShell({ children }: { children: ReactNode }) {
   };
 
   return (
+    <CartProvider>
     <div className="min-h-screen">
+      {/* Desktop cart button (floating, top-right) */}
+      <div className="fixed right-6 top-5 z-30 hidden lg:block">
+        <CartButton />
+      </div>
+
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-[color:var(--border)] bg-[color:var(--card)] px-4 py-6 lg:flex">
         <div className="px-2 pb-6">
@@ -104,13 +112,16 @@ export function MemberShell({ children }: { children: ReactNode }) {
       {/* Mobile header */}
       <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[color:var(--border)] bg-black/80 px-4 py-3 backdrop-blur-xl lg:hidden">
         <Logo />
-        <button
-          onClick={() => setOpen(true)}
-          className="grid h-9 w-9 place-items-center rounded-lg border border-[color:var(--border)] text-[color:var(--foreground)]"
-          aria-label="Open menu"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <CartButton />
+          <button
+            onClick={() => setOpen(true)}
+            className="grid h-9 w-9 place-items-center rounded-lg border border-[color:var(--border)] text-[color:var(--foreground)]"
+            aria-label="Open menu"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
       </header>
 
       {/* Mobile drawer */}
@@ -150,6 +161,9 @@ export function MemberShell({ children }: { children: ReactNode }) {
       <main className="lg:pl-64">
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10">{children}</div>
       </main>
+
+      <CartDrawer />
     </div>
+    </CartProvider>
   );
 }

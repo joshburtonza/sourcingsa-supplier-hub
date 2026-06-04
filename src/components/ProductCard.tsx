@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Package, ShoppingBag } from "lucide-react";
+import { Package, ShoppingBag, Plus } from "lucide-react";
 import { fmtZAR, STOCK_META } from "@/lib/orders";
+import { useCart } from "@/lib/cart";
 import { OrderModal } from "./OrderModal";
 
 // Re-exported for the screens that already import it from here.
@@ -49,6 +50,7 @@ function categoryGradient(category: string): string {
 
 export function ProductCard({ product, rank }: { product: Product; rank?: number }) {
   const [ordering, setOrdering] = useState(false);
+  const cart = useCart();
   const profit = Number(product.sell_price) - Number(product.cost_price);
   const margin = product.sell_price > 0 ? Math.round((profit / Number(product.sell_price)) * 100) : 0;
   const img = product.image_url || product.images?.[0] || null;
@@ -122,7 +124,17 @@ export function ProductCard({ product, rank }: { product: Product; rank?: number
           )}
         </div>
 
-        {product.checkout_url || product.shopify_url ? (
+        {cart ? (
+          <button
+            type="button"
+            disabled={outOfStock}
+            onClick={() => cart.add(product, 1)}
+            className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Plus className="h-4 w-4" />
+            {outOfStock ? "Out of stock" : "Add to cart"}
+          </button>
+        ) : product.checkout_url || product.shopify_url ? (
           <a
             href={product.checkout_url ?? product.shopify_url ?? undefined}
             target="_blank"
