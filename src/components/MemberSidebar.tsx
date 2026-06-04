@@ -12,6 +12,7 @@ import {
   X,
   User,
   LayoutDashboard,
+  Sparkles,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { CartProvider } from "@/lib/cart";
@@ -24,6 +25,7 @@ const NAV: Item[] = [
   { to: "/dashboard", label: "Dashboard", icon: Home },
   { to: "/products", label: "Find Products", icon: Search },
   { to: "/trending", label: "Trending Products", icon: Flame },
+  { to: "/tools", label: "AI Studio", icon: Sparkles },
   { to: "/orders", label: "Orders", icon: Package },
   { to: "/request-product", label: "Request a Product", icon: PlusCircle },
   { to: "/account", label: "Account", icon: User },

@@ -24,12 +24,15 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ToolsIndexRouteImport } from './routes/tools.index'
+import { Route as ToolsNicheFinderRouteImport } from './routes/tools.niche-finder'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminMembersRouteImport } from './routes/admin.members'
+import { Route as ApiToolsNicheFinderRouteImport } from './routes/api.tools.niche-finder'
 import { Route as ApiDropstoreLinkRouteImport } from './routes/api.dropstore.link'
 import { Route as ApiWebhooksShopifyOrdersPaidRouteImport } from './routes/api.webhooks.shopify.orders-paid'
 
@@ -108,6 +111,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsIndexRoute = ToolsIndexRouteImport.update({
+  id: '/tools/',
+  path: '/tools/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToolsNicheFinderRoute = ToolsNicheFinderRouteImport.update({
+  id: '/tools/niche-finder',
+  path: '/tools/niche-finder',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductIdRoute = ProductIdRouteImport.update({
   id: '/product/$id',
   path: '/product/$id',
@@ -137,6 +150,11 @@ const AdminMembersRoute = AdminMembersRouteImport.update({
   id: '/members',
   path: '/members',
   getParentRoute: () => AdminRoute,
+} as any)
+const ApiToolsNicheFinderRoute = ApiToolsNicheFinderRouteImport.update({
+  id: '/api/tools/niche-finder',
+  path: '/api/tools/niche-finder',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiDropstoreLinkRoute = ApiDropstoreLinkRouteImport.update({
   id: '/api/dropstore/link',
@@ -172,7 +190,10 @@ export interface FileRoutesByFullPath {
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/support': typeof AdminSupportRoute
   '/product/$id': typeof ProductIdRoute
+  '/tools/niche-finder': typeof ToolsNicheFinderRoute
+  '/tools/': typeof ToolsIndexRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
+  '/api/tools/niche-finder': typeof ApiToolsNicheFinderRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 export interface FileRoutesByTo {
@@ -197,7 +218,10 @@ export interface FileRoutesByTo {
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/support': typeof AdminSupportRoute
   '/product/$id': typeof ProductIdRoute
+  '/tools/niche-finder': typeof ToolsNicheFinderRoute
+  '/tools': typeof ToolsIndexRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
+  '/api/tools/niche-finder': typeof ApiToolsNicheFinderRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 export interface FileRoutesById {
@@ -223,7 +247,10 @@ export interface FileRoutesById {
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/support': typeof AdminSupportRoute
   '/product/$id': typeof ProductIdRoute
+  '/tools/niche-finder': typeof ToolsNicheFinderRoute
+  '/tools/': typeof ToolsIndexRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
+  '/api/tools/niche-finder': typeof ApiToolsNicheFinderRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 export interface FileRouteTypes {
@@ -250,7 +277,10 @@ export interface FileRouteTypes {
     | '/admin/requests'
     | '/admin/support'
     | '/product/$id'
+    | '/tools/niche-finder'
+    | '/tools/'
     | '/api/dropstore/link'
+    | '/api/tools/niche-finder'
     | '/api/webhooks/shopify/orders-paid'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -275,7 +305,10 @@ export interface FileRouteTypes {
     | '/admin/requests'
     | '/admin/support'
     | '/product/$id'
+    | '/tools/niche-finder'
+    | '/tools'
     | '/api/dropstore/link'
+    | '/api/tools/niche-finder'
     | '/api/webhooks/shopify/orders-paid'
   id:
     | '__root__'
@@ -300,7 +333,10 @@ export interface FileRouteTypes {
     | '/admin/requests'
     | '/admin/support'
     | '/product/$id'
+    | '/tools/niche-finder'
+    | '/tools/'
     | '/api/dropstore/link'
+    | '/api/tools/niche-finder'
     | '/api/webhooks/shopify/orders-paid'
   fileRoutesById: FileRoutesById
 }
@@ -321,7 +357,10 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   TrendingRoute: typeof TrendingRoute
   ProductIdRoute: typeof ProductIdRoute
+  ToolsNicheFinderRoute: typeof ToolsNicheFinderRoute
+  ToolsIndexRoute: typeof ToolsIndexRoute
   ApiDropstoreLinkRoute: typeof ApiDropstoreLinkRoute
+  ApiToolsNicheFinderRoute: typeof ApiToolsNicheFinderRoute
   ApiWebhooksShopifyOrdersPaidRoute: typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 
@@ -432,6 +471,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tools/': {
+      id: '/tools/'
+      path: '/tools'
+      fullPath: '/tools/'
+      preLoaderRoute: typeof ToolsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/niche-finder': {
+      id: '/tools/niche-finder'
+      path: '/tools/niche-finder'
+      fullPath: '/tools/niche-finder'
+      preLoaderRoute: typeof ToolsNicheFinderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/product/$id': {
       id: '/product/$id'
       path: '/product/$id'
@@ -473,6 +526,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/members'
       preLoaderRoute: typeof AdminMembersRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/api/tools/niche-finder': {
+      id: '/api/tools/niche-finder'
+      path: '/api/tools/niche-finder'
+      fullPath: '/api/tools/niche-finder'
+      preLoaderRoute: typeof ApiToolsNicheFinderRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/dropstore/link': {
       id: '/api/dropstore/link'
@@ -526,7 +586,10 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   TrendingRoute: TrendingRoute,
   ProductIdRoute: ProductIdRoute,
+  ToolsNicheFinderRoute: ToolsNicheFinderRoute,
+  ToolsIndexRoute: ToolsIndexRoute,
   ApiDropstoreLinkRoute: ApiDropstoreLinkRoute,
+  ApiToolsNicheFinderRoute: ApiToolsNicheFinderRoute,
   ApiWebhooksShopifyOrdersPaidRoute: ApiWebhooksShopifyOrdersPaidRoute,
 }
 export const routeTree = rootRouteImport
