@@ -11,10 +11,12 @@ import {
   Flame,
   PlusCircle,
   MessageCircle,
+  ArrowRight,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProtectedShell } from "@/components/ProtectedShell";
 import { useAuth } from "@/hooks/use-auth";
+import { ProductCard, type Product } from "@/components/ProductCard";
 import { fmtZAR, shortId, STATUS_META, type OrderStatus } from "@/lib/orders";
 
 export const Route = createFileRoute("/dashboard")({
@@ -41,21 +43,42 @@ type Order = {
   ordered_at: string;
 };
 
+const CARD_COLS =
+  "id,name,category,cost_price,sell_price,image_url,images,shopify_url,description,stock_status,sales_count,trending";
+
 function Dashboard() {
   const { user } = useAuth();
   const email = user?.email;
   const [orders, setOrders] = useState<Order[]>([]);
+  const [trending, setTrending] = useState<Product[]>([]);
+  const [catalogueCount, setCatalogueCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!email) return;
     (async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select("id, product_name, quantity, amount, paid, status, ordered_at")
-        .order("ordered_at", { ascending: false });
-      if (error) console.error("[dashboard] orders load failed", error.message);
-      setOrders((data as Order[]) ?? []);
+      const [ordRes, trendRes, countRes] = await Promise.all([
+        supabase
+          .from("orders")
+          .select("id, product_name, quantity, amount, paid, status, ordered_at")
+          .order("ordered_at", { ascending: false }),
+        supabase
+          .from("products")
+          .select(CARD_COLS)
+          .eq("active", true)
+          .eq("trending", true)
+          .order("sales_count", { ascending: false })
+          .limit(6),
+        supabase
+          .from("products")
+          .select("id", { count: "exact", head: true })
+          .eq("active", true),
+      ]);
+      if (ordRes.error) console.error("[dashboard] orders load failed", ordRes.error.message);
+      if (trendRes.error) console.error("[dashboard] trending load failed", trendRes.error.message);
+      setOrders((ordRes.data as Order[]) ?? []);
+      setTrending((trendRes.data as Product[]) ?? []);
+      setCatalogueCount(countRes.count ?? null);
       setLoading(false);
     })();
   }, [email]);
@@ -82,7 +105,10 @@ function Dashboard() {
         <h1 className="text-2xl font-bold text-white sm:text-3xl">
           Welcome back, <span className="text-[color:var(--primary)]">{name}</span>
         </h1>
-        <p className="mt-1 text-sm text-[color:var(--muted-foreground)]">Here&apos;s an overview of your activity.</p>
+        <p className="mt-1 text-sm text-[color:var(--muted-foreground)]">
+          Here&apos;s an overview of your activity.
+          {catalogueCount ? <> · <span className="text-white">{catalogueCount} products</span> ready to sell.</> : null}
+        </p>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -93,6 +119,24 @@ function Dashboard() {
         <StatCard icon={<CheckCircle2 />} label="Delivered" value={stats.delivered} />
         <StatCard icon={<CalendarDays />} label="Member Since" value={memberSince} />
       </section>
+
+      {trending.length > 0 && (
+        <section>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
+              <Flame className="h-5 w-5 text-[color:var(--primary)]" /> Trending this week
+            </h2>
+            <Link to="/trending" className="inline-flex items-center gap-1 text-sm font-medium text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]">
+              View all <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {trending.map((p, i) => (
+              <ProductCard key={p.id} product={p} rank={i + 1} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)]">
         <div className="flex items-center justify-between border-b border-[color:var(--border)] px-6 py-4">
@@ -105,7 +149,7 @@ function Dashboard() {
           </div>
         ) : recent.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-sm text-[color:var(--muted-foreground)]">No orders yet. Start by finding products to sell.</p>
+            <p className="text-sm text-[color:var(--muted-foreground)]">No orders yet. Pick a trending product above or browse the full catalogue to start selling.</p>
             <Link to="/products" className="mt-4 inline-block rounded-lg bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[color:var(--primary-hover)] glow-btn">Browse the catalogue</Link>
           </div>
         ) : (
