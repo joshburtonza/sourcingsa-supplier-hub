@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ProtectedShell } from "@/components/ProtectedShell";
 import { ProductBrowser } from "@/components/ProductBrowser";
+import { NicheRecommender } from "@/components/NicheRecommender";
 
 export const Route = createFileRoute("/products")({
   component: () => (
@@ -25,6 +26,7 @@ function Page() {
           Browse vetted SA supplier products and order with one click.
         </p>
       </header>
+      <NicheRecommender />
       <ProductBrowser />
     </div>
   );

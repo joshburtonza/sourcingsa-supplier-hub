@@ -32,6 +32,7 @@ import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminMembersRouteImport } from './routes/admin.members'
+import { Route as ApiToolsRecommendNicheRouteImport } from './routes/api.tools.recommend-niche'
 import { Route as ApiToolsNicheFinderRouteImport } from './routes/api.tools.niche-finder'
 import { Route as ApiDropstoreLinkRouteImport } from './routes/api.dropstore.link'
 import { Route as ApiWebhooksShopifyOrdersPaidRouteImport } from './routes/api.webhooks.shopify.orders-paid'
@@ -151,6 +152,11 @@ const AdminMembersRoute = AdminMembersRouteImport.update({
   path: '/members',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiToolsRecommendNicheRoute = ApiToolsRecommendNicheRouteImport.update({
+  id: '/api/tools/recommend-niche',
+  path: '/api/tools/recommend-niche',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiToolsNicheFinderRoute = ApiToolsNicheFinderRouteImport.update({
   id: '/api/tools/niche-finder',
   path: '/api/tools/niche-finder',
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/tools/': typeof ToolsIndexRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
   '/api/tools/niche-finder': typeof ApiToolsNicheFinderRoute
+  '/api/tools/recommend-niche': typeof ApiToolsRecommendNicheRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 export interface FileRoutesByTo {
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/tools': typeof ToolsIndexRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
   '/api/tools/niche-finder': typeof ApiToolsNicheFinderRoute
+  '/api/tools/recommend-niche': typeof ApiToolsRecommendNicheRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 export interface FileRoutesById {
@@ -251,6 +259,7 @@ export interface FileRoutesById {
   '/tools/': typeof ToolsIndexRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
   '/api/tools/niche-finder': typeof ApiToolsNicheFinderRoute
+  '/api/tools/recommend-niche': typeof ApiToolsRecommendNicheRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 export interface FileRouteTypes {
@@ -281,6 +290,7 @@ export interface FileRouteTypes {
     | '/tools/'
     | '/api/dropstore/link'
     | '/api/tools/niche-finder'
+    | '/api/tools/recommend-niche'
     | '/api/webhooks/shopify/orders-paid'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -309,6 +319,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/api/dropstore/link'
     | '/api/tools/niche-finder'
+    | '/api/tools/recommend-niche'
     | '/api/webhooks/shopify/orders-paid'
   id:
     | '__root__'
@@ -337,6 +348,7 @@ export interface FileRouteTypes {
     | '/tools/'
     | '/api/dropstore/link'
     | '/api/tools/niche-finder'
+    | '/api/tools/recommend-niche'
     | '/api/webhooks/shopify/orders-paid'
   fileRoutesById: FileRoutesById
 }
@@ -361,6 +373,7 @@ export interface RootRouteChildren {
   ToolsIndexRoute: typeof ToolsIndexRoute
   ApiDropstoreLinkRoute: typeof ApiDropstoreLinkRoute
   ApiToolsNicheFinderRoute: typeof ApiToolsNicheFinderRoute
+  ApiToolsRecommendNicheRoute: typeof ApiToolsRecommendNicheRoute
   ApiWebhooksShopifyOrdersPaidRoute: typeof ApiWebhooksShopifyOrdersPaidRoute
 }
 
@@ -527,6 +540,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMembersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/tools/recommend-niche': {
+      id: '/api/tools/recommend-niche'
+      path: '/api/tools/recommend-niche'
+      fullPath: '/api/tools/recommend-niche'
+      preLoaderRoute: typeof ApiToolsRecommendNicheRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/tools/niche-finder': {
       id: '/api/tools/niche-finder'
       path: '/api/tools/niche-finder'
@@ -590,6 +610,7 @@ const rootRouteChildren: RootRouteChildren = {
   ToolsIndexRoute: ToolsIndexRoute,
   ApiDropstoreLinkRoute: ApiDropstoreLinkRoute,
   ApiToolsNicheFinderRoute: ApiToolsNicheFinderRoute,
+  ApiToolsRecommendNicheRoute: ApiToolsRecommendNicheRoute,
   ApiWebhooksShopifyOrdersPaidRoute: ApiWebhooksShopifyOrdersPaidRoute,
 }
 export const routeTree = rootRouteImport
