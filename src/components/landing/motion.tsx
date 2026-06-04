@@ -52,7 +52,9 @@ export function Reveal({
     if (!el) return;
     if (
       typeof window !== "undefined" &&
-      (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window))
+      (window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+        !("IntersectionObserver" in window) ||
+        new URLSearchParams(window.location.search).has("nomotion"))
     ) {
       setVisible(true);
       return;

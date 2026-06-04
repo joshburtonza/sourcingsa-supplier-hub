@@ -87,9 +87,27 @@ function Hero() {
 }
 
 const PREVIEW = [
-  { name: "Posture Corrector Brace", category: "Fitness", cost: 79, sell: 249 },
-  { name: "LED Face Mask", category: "Beauty", cost: 389, sell: 1099 },
-  { name: "Wireless Earbuds Pro", category: "Tech", cost: 229, sell: 649 },
+  {
+    name: "Water-Gloss Highlight Stick",
+    category: "Makeup",
+    cost: 82,
+    sell: 202,
+    img: "https://cdn.shopify.com/s/files/1/0999/3332/3581/files/0ca4ea03-a691-459c-bc32-1dd5b19a1386.jpg?v=1780582505",
+  },
+  {
+    name: "Striped Shirt Dress",
+    category: "Women's Dresses",
+    cost: 320,
+    sell: 815,
+    img: "https://cdn.shopify.com/s/files/1/0999/3332/3581/files/d3374083fd2847ac98799e6a5866a085-goods.jpg?v=1780583769",
+  },
+  {
+    name: "Beard & Hair Grooming Brush",
+    category: "Hair Care",
+    cost: 402,
+    sell: 1022,
+    img: "https://cdn.shopify.com/s/files/1/0999/3332/3581/files/694d7f2f-890d-4941-8f39-570d55effd68.jpg?v=1780583700",
+  },
 ];
 
 function CataloguePreview() {
@@ -102,13 +120,16 @@ function CataloguePreview() {
       <div className="grid gap-4 sm:grid-cols-3">
         {PREVIEW.map((p) => {
           const profit = p.sell - p.cost;
+          const margin = Math.round((profit / p.sell) * 100);
           return (
             <div key={p.name} className="rounded-xl border border-white/8 bg-white/[0.03] p-4 text-left">
-              <div className="aspect-[4/3] rounded-lg" style={{ background: "linear-gradient(135deg, #1a1340 0%, #2a1d6b 100%)" }} />
+              <div className="aspect-[4/3] overflow-hidden rounded-lg bg-white">
+                <img src={p.img} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
+              </div>
               <div className="mt-3 text-sm font-semibold text-white">{p.name}</div>
               <div className="text-[11px] uppercase tracking-wider text-[#7B5EE8]">{p.category}</div>
               <div className="mt-2 text-sm text-white">{fmtZAR(p.cost)} <span className="text-[#A1A1AA]">→ {fmtZAR(p.sell)}</span></div>
-              <div className="mt-1 inline-flex rounded-md bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-300">{fmtZAR(profit)} profit</div>
+              <div className="mt-1 inline-flex rounded-md bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-300">{fmtZAR(profit)} profit · {margin}%</div>
             </div>
           );
         })}
@@ -171,7 +192,8 @@ function WhatYouGet() {
           <SectionEyebrow text="What you get access to" />
           <h2 className="mt-5 max-w-3xl text-3xl font-bold tracking-tight text-white sm:text-5xl">Built for the way SA dropshippers actually sell.</h2>
         </Reveal>
-        <div className="mt-16 grid gap-6 lg:grid-cols-2">
+
+        <div className="mt-16 grid items-stretch gap-6 lg:grid-cols-2">
           <Reveal>
             <FeatureBlock
               eyebrow="The catalogue"
@@ -181,12 +203,21 @@ function WhatYouGet() {
             />
           </Reveal>
           <Reveal delay={90}>
+            <SalesOverviewMock />
+          </Reveal>
+        </div>
+
+        <div className="mt-6 grid items-stretch gap-6 lg:grid-cols-2">
+          <Reveal className="lg:order-2">
             <FeatureBlock
               eyebrow="The fulfilment"
               title="We ship it. You keep the profit."
               description="Your customer orders from your store. You order from us at cost. We ship direct to them, anywhere in SA, and you track every order live from your dashboard."
               bullets={["Local SA suppliers", "No stock to hold", "Live order tracking", "Ships nationwide"]}
             />
+          </Reveal>
+          <Reveal delay={90} className="lg:order-1">
+            <OrderFeedMock />
           </Reveal>
         </div>
       </div>
@@ -205,6 +236,97 @@ function FeatureBlock({ eyebrow, title, description, bullets }: { eyebrow: strin
           <li key={b} className="flex items-center gap-2 text-sm text-white"><Check className="h-4 w-4 text-[#7B5EE8]" strokeWidth={3} />{b}</li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function StatTile({ label, value, sub, subClass = "text-emerald-300" }: { label: string; value: string; sub: string; subClass?: string }) {
+  return (
+    <div className="rounded-xl border border-white/8 bg-white/[0.03] p-3.5">
+      <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#71717A]">{label}</div>
+      <div className="mt-1.5 text-lg font-bold tracking-tight text-white">{value}</div>
+      <div className={`mt-0.5 text-[11px] font-semibold ${subClass}`}>{sub}</div>
+    </div>
+  );
+}
+
+function SalesOverviewMock() {
+  return (
+    <div className="glass h-full p-5 md:p-6">
+      <div className="flex items-center justify-between">
+        <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#A1A1AA]">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+          Vault · Sales overview
+        </span>
+        <span className="text-[11px] text-[#71717A]">May 2026</span>
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-3">
+        <StatTile label="Total revenue" value="R284K" sub="+514%" />
+        <StatTile label="Orders" value="1,316" sub="+679%" />
+        <StatTile label="Avg margin" value="R993" sub="Your cut" subClass="text-[#A1A1AA]" />
+      </div>
+
+      <div className="mt-4 rounded-xl border border-white/8 bg-white/[0.03] p-4">
+        <div className="flex items-center justify-between">
+          <div className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#71717A]">Revenue over time</div>
+          <div className="flex gap-1 text-[10px]">
+            <span className="rounded-md px-1.5 py-0.5 text-[#71717A]">7D</span>
+            <span className="rounded-md bg-[color:var(--primary)]/25 px-1.5 py-0.5 font-semibold text-white">30D</span>
+            <span className="rounded-md px-1.5 py-0.5 text-[#71717A]">90D</span>
+          </div>
+        </div>
+        <div className="mt-1 flex items-baseline gap-2">
+          <span className="text-2xl font-bold tracking-tight text-white">R1,470,847</span>
+          <span className="text-xs font-semibold text-emerald-300">+494%</span>
+        </div>
+        <svg viewBox="0 0 300 90" preserveAspectRatio="none" className="mt-3 h-24 w-full">
+          <defs>
+            <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#7B5EE8" stopOpacity="0.45" />
+              <stop offset="100%" stopColor="#7B5EE8" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d="M0,78 C40,74 60,66 90,60 C120,54 140,40 175,33 C210,26 240,16 300,8 L300,90 L0,90 Z" fill="url(#rev)" />
+          <path d="M0,78 C40,74 60,66 90,60 C120,54 140,40 175,33 C210,26 240,16 300,8" fill="none" stroke="#7B5EE8" strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+const FEED = [
+  { id: "#4821", city: "Cape Town", amount: "R349.00", status: "Delivered", tone: "text-emerald-300 bg-emerald-500/15" },
+  { id: "#4820", city: "Johannesburg", amount: "R612.00", status: "In transit", tone: "text-sky-300 bg-sky-500/15" },
+  { id: "#4819", city: "Durban", amount: "R248.00", status: "Delivered", tone: "text-emerald-300 bg-emerald-500/15" },
+  { id: "#4818", city: "Pretoria", amount: "R815.00", status: "Processing", tone: "text-[#b9a6ff] bg-[color:var(--primary)]/20" },
+];
+
+function OrderFeedMock() {
+  return (
+    <div className="glass h-full p-5 md:p-6">
+      <div className="flex items-center justify-between">
+        <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#A1A1AA]">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+          Vault · Live order feed
+        </span>
+        <span className="text-[11px] text-[#71717A]">47 active today</span>
+      </div>
+      <div className="mt-4 space-y-2.5">
+        {FEED.slice(0, 4).map((o) => (
+          <div key={o.id} className="flex items-center justify-between rounded-xl border border-white/8 bg-white/[0.03] px-4 py-3">
+            <div className="flex items-center gap-3">
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-[color:var(--primary)]/15 text-[color:var(--primary)]"><Truck className="h-4 w-4" /></span>
+              <div>
+                <div className="text-sm font-semibold text-white">Order {o.id} · {o.city}</div>
+                <div className="text-[11px] text-[#71717A]">{o.amount}</div>
+              </div>
+            </div>
+            <span className={`rounded-full px-2.5 py-1 text-[10px] font-semibold ${o.tone}`}>{o.status}</span>
+          </div>
+        ))}
+      </div>
+      <p className="mt-4 text-center text-[11px] text-[#71717A]">Every order shipped direct to your customer · tracked live</p>
     </div>
   );
 }
