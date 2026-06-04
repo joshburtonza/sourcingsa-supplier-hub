@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Package, ShoppingBag } from "lucide-react";
 import { fmtZAR, STOCK_META } from "@/lib/orders";
 import { OrderModal } from "./OrderModal";
@@ -15,6 +16,7 @@ export type Product = {
   image_url: string | null;
   images?: string[] | null;
   shopify_url?: string | null;
+  checkout_url?: string | null;
   description?: string | null;
   stock_status?: string | null;
   active?: boolean | null;
@@ -66,7 +68,12 @@ export function ProductCard({ product, rank }: { product: Product; rank?: number
           Trending
         </span>
       )}
-      <div className="relative aspect-[4/3] overflow-hidden" style={{ background: categoryGradient(product.category) }}>
+      <Link
+        to="/product/$id"
+        params={{ id: product.id }}
+        className="relative block aspect-[4/3] overflow-hidden"
+        style={{ background: categoryGradient(product.category) }}
+      >
         {img ? (
           <img
             src={img}
@@ -79,11 +86,11 @@ export function ProductCard({ product, rank }: { product: Product; rank?: number
             <Package className="h-12 w-12" />
           </div>
         )}
-      </div>
+      </Link>
 
       <div className="flex flex-1 flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="font-semibold leading-tight text-white">{product.name}</h3>
+          <Link to="/product/$id" params={{ id: product.id }} className="font-semibold leading-tight text-white transition-colors hover:text-[color:var(--primary)]">{product.name}</Link>
           <span className="shrink-0 rounded-full bg-[color:var(--primary)]/15 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-[color:var(--primary)]">
             {product.category}
           </span>
@@ -115,9 +122,9 @@ export function ProductCard({ product, rank }: { product: Product; rank?: number
           )}
         </div>
 
-        {product.shopify_url ? (
+        {product.checkout_url || product.shopify_url ? (
           <a
-            href={product.shopify_url}
+            href={product.checkout_url ?? product.shopify_url ?? undefined}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => { if (outOfStock) e.preventDefault(); }}

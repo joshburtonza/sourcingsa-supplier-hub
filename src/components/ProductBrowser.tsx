@@ -51,7 +51,7 @@ export function ProductBrowser({
       // ship the internal `supplier_note` field to every member's browser.
       let q = supabase
         .from("products")
-        .select("id,name,category,cost_price,sell_price,image_url,images,shopify_url,description,stock_status,active,sales_count,trending")
+        .select("id,name,category,cost_price,sell_price,image_url,images,shopify_url,checkout_url,description,stock_status,active,sales_count,trending")
         .eq("active", true)
         // Products with a real image lead; the imageless legacy items sort last
         // (nullsFirst:false) so the catalogue never opens on placeholder cards.

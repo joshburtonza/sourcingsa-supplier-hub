@@ -24,6 +24,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
@@ -107,6 +108,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProductIdRoute = ProductIdRouteImport.update({
+  id: '/product/$id',
+  path: '/product/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSupportRoute = AdminSupportRouteImport.update({
   id: '/support',
   path: '/support',
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/admin/products': typeof AdminProductsRoute
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/support': typeof AdminSupportRoute
+  '/product/$id': typeof ProductIdRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/admin/products': typeof AdminProductsRoute
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/support': typeof AdminSupportRoute
+  '/product/$id': typeof ProductIdRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/admin/products': typeof AdminProductsRoute
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/support': typeof AdminSupportRoute
+  '/product/$id': typeof ProductIdRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
 }
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/requests'
     | '/admin/support'
+    | '/product/$id'
     | '/api/dropstore/link'
     | '/api/webhooks/shopify/orders-paid'
   fileRoutesByTo: FileRoutesByTo
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/requests'
     | '/admin/support'
+    | '/product/$id'
     | '/api/dropstore/link'
     | '/api/webhooks/shopify/orders-paid'
   id:
@@ -288,6 +299,7 @@ export interface FileRouteTypes {
     | '/admin/products'
     | '/admin/requests'
     | '/admin/support'
+    | '/product/$id'
     | '/api/dropstore/link'
     | '/api/webhooks/shopify/orders-paid'
   fileRoutesById: FileRoutesById
@@ -308,6 +320,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SupportRoute: typeof SupportRoute
   TrendingRoute: typeof TrendingRoute
+  ProductIdRoute: typeof ProductIdRoute
   ApiDropstoreLinkRoute: typeof ApiDropstoreLinkRoute
   ApiWebhooksShopifyOrdersPaidRoute: typeof ApiWebhooksShopifyOrdersPaidRoute
 }
@@ -419,6 +432,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/product/$id': {
+      id: '/product/$id'
+      path: '/product/$id'
+      fullPath: '/product/$id'
+      preLoaderRoute: typeof ProductIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/support': {
       id: '/admin/support'
       path: '/support'
@@ -505,6 +525,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SupportRoute: SupportRoute,
   TrendingRoute: TrendingRoute,
+  ProductIdRoute: ProductIdRoute,
   ApiDropstoreLinkRoute: ApiDropstoreLinkRoute,
   ApiWebhooksShopifyOrdersPaidRoute: ApiWebhooksShopifyOrdersPaidRoute,
 }
