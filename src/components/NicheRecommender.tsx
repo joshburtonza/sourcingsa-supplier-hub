@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Sparkles, TrendingUp, AlertTriangle, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type Product } from "@/components/ProductCard";
@@ -16,11 +16,13 @@ const RISK_CLS: Record<string, string> = {
  *  Find Products page. Picks one niche + N catalogue products sized to the
  *  member's package tier. */
 export function NicheRecommender() {
+  const [interests, setInterests] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
 
-  async function recommend() {
+  async function recommend(e?: FormEvent) {
+    e?.preventDefault();
     setErr(null);
     setBusy(true);
     setResult(null);
@@ -29,7 +31,7 @@ export function NicheRecommender() {
       const res = await fetch("/api/tools/recommend-niche", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${s.session?.access_token ?? ""}` },
-        body: "{}",
+        body: JSON.stringify({ interests: interests.trim() }),
       });
       const data = (await res.json()) as { ok: boolean; error?: string } & Partial<Result>;
       if (!data.ok || !data.niche) {
@@ -46,25 +48,31 @@ export function NicheRecommender() {
 
   return (
     <div className="rounded-2xl border border-[color:var(--primary)]/40 bg-[color:var(--primary)]/[0.06] p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[color:var(--primary)]/20 text-[color:var(--primary)]">
-            <Sparkles className="h-5 w-5" />
-          </span>
-          <div>
-            <h2 className="text-base font-bold text-white">Not sure what to sell?</h2>
-            <p className="text-sm text-[color:var(--muted-foreground)]">Get a niche + a ready-made product set picked for your package.</p>
-          </div>
+      <div className="flex items-center gap-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[color:var(--primary)]/20 text-[color:var(--primary)]">
+          <Sparkles className="h-5 w-5" />
+        </span>
+        <div>
+          <h2 className="text-base font-bold text-white">Not sure what to sell?</h2>
+          <p className="text-sm text-[color:var(--muted-foreground)]">Tell the AI a niche, or leave it blank and we&apos;ll pick one for your package.</p>
         </div>
+      </div>
+      <form onSubmit={recommend} className="mt-4 flex flex-col gap-2 sm:flex-row">
+        <input
+          value={interests}
+          onChange={(e) => setInterests(e.target.value)}
+          placeholder="e.g. fitness gear, baby products, phone accessories (optional)"
+          className="flex-1 rounded-lg border border-[color:var(--border)] bg-[color:var(--input)] px-3 py-2.5 text-sm text-white outline-none focus:border-[color:var(--primary)]"
+        />
         <button
-          onClick={recommend}
+          type="submit"
           disabled={busy}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:opacity-60"
         >
           <Sparkles className="h-4 w-4" />
-          {busy ? "Picking your niche…" : "Recommend my niche"}
+          {busy ? "Picking…" : "Recommend my niche"}
         </button>
-      </div>
+      </form>
 
       {busy && (
         <div className="mt-5 grid place-items-center py-6">

@@ -24,7 +24,7 @@ const DEFAULT_COUNT = 4;
 type Niche = { name: string; fit: string; category: string; adAngle: string; risk: string; riskLevel: "low" | "medium" | "high" };
 
 const SYSTEM = `You are the ZA Supplier Hub niche advisor for South African dropshippers.
-Pick the SINGLE best niche to start selling right now, chosen from the supplier catalogue categories provided.
+Pick the SINGLE best niche, chosen from the supplier catalogue categories provided. If the member describes what they want, choose the catalogue category that best fits their request; otherwise pick the strongest overall opportunity.
 
 OUTPUT ONE VALID JSON OBJECT ONLY. No prose, no code fences. Start with { end with }.
 {
@@ -63,12 +63,15 @@ export const Route = createFileRoute("/api/tools/recommend-niche")({
         const tier = String((prof as { dropstore_tier?: string } | null)?.dropstore_tier ?? "").toLowerCase();
         const count = TIER_COUNT[tier] ?? DEFAULT_COUNT;
 
+        const body = (await request.json().catch(() => ({}))) as { interests?: string };
+        const interests = String(body.interests ?? "").trim().slice(0, 400);
+
         // catalogue categories
         const { data: catRows } = await admin.from("products").select("category").eq("active", true);
         const categories = [...new Set((catRows ?? []).map((r: { category: string }) => String(r.category)))].sort();
         if (categories.length === 0) return json({ ok: false, error: "Catalogue is empty." }, 500);
 
-        const prompt = `CATALOGUE CATEGORIES (copy "category" verbatim from this list):\n${categories.join("\n")}`;
+        const prompt = `${interests ? `Member's request (match the closest category): ${interests}` : "Member has no specific preference; pick the strongest opportunity."}\n\nCATALOGUE CATEGORIES (copy "category" verbatim from this list):\n${categories.join("\n")}`;
 
         let parsed: { niche: Niche } | null = null;
         let lastRaw = "";
