@@ -80,12 +80,23 @@ export function useAuth(): AuthState {
     });
 
     // Live subscription, fires on sign-in, sign-out, token refresh, etc.
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_event, s) => {
+    //
+    // The callback must stay synchronous and must NOT await a supabase query
+    // inside itself. The v2 client holds an internal lock while running
+    // onAuthStateChange handlers; calling another supabase method here (e.g.
+    // fetchRoles -> user_roles select) needs the same lock and deadlocks —
+    // signInWithPassword never resolves and the UI hangs on "Signing in...".
+    // Deferring the query with setTimeout(0) runs it after the lock releases.
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       if (cancelled) return;
       setSession(s);
       if (s?.user?.id) {
-        const r = await fetchRoles(s.user.id);
-        if (!cancelled) setRoles(r);
+        const uid = s.user.id;
+        setTimeout(() => {
+          fetchRoles(uid).then((r) => {
+            if (!cancelled) setRoles(r);
+          });
+        }, 0);
       } else {
         setRoles({ approved: false, admin: false });
       }
