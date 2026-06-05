@@ -12,6 +12,7 @@ import {
   PlusCircle,
   MessageCircle,
   ArrowRight,
+  BadgeCheck,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProtectedShell } from "@/components/ProtectedShell";
@@ -52,12 +53,13 @@ function Dashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [trending, setTrending] = useState<Product[]>([]);
   const [catalogueCount, setCatalogueCount] = useState<number | null>(null);
+  const [membership, setMembership] = useState<{ amount: number | null; paid_at: string | null } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!email) return;
     (async () => {
-      const [ordRes, trendRes, countRes] = await Promise.all([
+      const [ordRes, trendRes, countRes, memberRes] = await Promise.all([
         supabase
           .from("orders")
           .select("id, product_name, quantity, amount, paid, status, ordered_at")
@@ -73,12 +75,19 @@ function Dashboard() {
           .from("products")
           .select("id", { count: "exact", head: true })
           .eq("active", true),
+        // Own membership row (RLS: select where email = auth.email()).
+        supabase
+          .from("paid_customers")
+          .select("amount, paid_at")
+          .maybeSingle(),
       ]);
       if (ordRes.error) console.error("[dashboard] orders load failed", ordRes.error.message);
       if (trendRes.error) console.error("[dashboard] trending load failed", trendRes.error.message);
+      if (memberRes.error) console.error("[dashboard] membership load failed", memberRes.error.message);
       setOrders((ordRes.data as Order[]) ?? []);
       setTrending((trendRes.data as Product[]) ?? []);
       setCatalogueCount(countRes.count ?? null);
+      setMembership((memberRes.data as { amount: number | null; paid_at: string | null } | null) ?? null);
       setLoading(false);
     })();
   }, [email]);
@@ -92,10 +101,10 @@ function Dashboard() {
     return { total, spent, transit, delivered, awaiting };
   }, [orders]);
 
+  const fmtDate = (d?: string | null) =>
+    d ? new Date(d).toLocaleDateString("en-ZA", { year: "numeric", month: "short", day: "numeric" }) : "-";
   const name = (email ?? "Member").split("@")[0];
-  const memberSince = user?.created_at
-    ? new Date(user.created_at).toLocaleDateString("en-ZA", { year: "numeric", month: "short", day: "numeric" })
-    : "-";
+  const memberSince = fmtDate(membership?.paid_at ?? user?.created_at ?? null);
   const recent = orders.slice(0, 5);
 
   return (
@@ -110,6 +119,18 @@ function Dashboard() {
           {catalogueCount ? <> · <span className="text-white">{catalogueCount} products</span> ready to sell.</> : null}
         </p>
       </section>
+
+      {!loading && membership && (
+        <section className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] px-5 py-4">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-3 py-1 text-xs font-bold uppercase tracking-wider text-emerald-300">
+            <BadgeCheck className="h-3.5 w-3.5" /> Membership Active
+          </span>
+          <span className="text-sm text-[color:var(--muted-foreground)]">
+            Supplier Hub access · <span className="font-semibold text-white">{fmtZAR(Number(membership.amount ?? 99))}</span>
+            {membership.paid_at ? <> · paid {fmtDate(membership.paid_at)}</> : null}
+          </span>
+        </section>
+      )}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard icon={<Package />} label="Total Orders" value={stats.total} />
