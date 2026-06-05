@@ -125,8 +125,11 @@ type ShopifyOrder = {
   [key: string]: unknown;
 };
 
-// The R99 membership product is not a "product order" a member tracks.
-const ACCESS_VARIANT_ID = "51793619550525";
+// The R99 "Get Access" membership product is not a "product order" a member
+// tracks. Match by both variant and product id (variants can change if the
+// product is recreated). These are the live "Get Access" identifiers.
+const ACCESS_VARIANT_IDS = new Set(["51717612273981", "51793619550525"]);
+const ACCESS_PRODUCT_ID = "10346097967421";
 
 /** Hub member email is carried through Shopify checkout as `note=ZASH:<email>`
  *  so an order attributes to the member's hub login even if they use a
@@ -185,7 +188,9 @@ async function recordHubOrders(order: ShopifyOrder, hubEmail: string): Promise<v
   if (!orderId || !hubEmail) return;
 
   const items = (order.line_items ?? []).filter(
-    (li) => String(li.variant_id ?? "") !== ACCESS_VARIANT_ID,
+    (li) =>
+      !ACCESS_VARIANT_IDS.has(String(li.variant_id ?? "")) &&
+      String(li.product_id ?? "") !== ACCESS_PRODUCT_ID,
   );
   if (items.length === 0) return; // membership-only order, nothing to track
 

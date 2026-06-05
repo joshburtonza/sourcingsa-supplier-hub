@@ -20,7 +20,6 @@ const SearchIcon = () => (
   </svg>
 );
 
-const CATEGORIES = ["All", "Fitness", "Beauty", "Hair Care", "Skincare", "Jewellery", "Home & Kitchen", "Tech", "Pet Products", "Fashion", "Men's Grooming", "Baby & Mom"];
 const PRICE_RANGES = [
   { label: "Any Price", min: 0, max: Infinity },
   { label: "Under R200", min: 0, max: 200 },
@@ -65,6 +64,14 @@ export function ProductBrowser({
     })();
   }, [trendingOnly]);
 
+  // Derive the category list from the real catalogue so the dropdown options
+  // always match actual product.category values (a hardcoded list silently
+  // breaks the filter whenever the catalogue's categories differ).
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(products.map((p) => p.category).filter(Boolean))).sort((a, b) => a.localeCompare(b))],
+    [products],
+  );
+
   const filtered = useMemo(() => {
     const pr = PRICE_RANGES[priceIdx];
     return products.filter((p) => {
@@ -94,7 +101,7 @@ export function ProductBrowser({
           onChange={(e) => setCategory(e.target.value)}
           className="input focus-glow sm:w-48"
         >
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <option key={c} value={c} className="bg-[color:var(--card)]">
               {c === "All" ? "All Categories" : c}
             </option>
