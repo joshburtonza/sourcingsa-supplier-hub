@@ -21,9 +21,9 @@ type Tool = {
 
 const TOOLS: Tool[] = [
   { to: "/tools/niche-finder", icon: Flame, name: "Niche Finder", desc: "3 SA niches that fit you, matched to real products in the catalogue.", live: true },
-  { icon: CheckCircle2, name: "Product Validator", desc: "Score any product across 24 dropshipping criteria before you commit.", live: false },
-  { icon: Calculator, name: "Profit Calculator", desc: "Work out margins, breakeven and ad budget on cost vs sell price.", live: false },
-  { icon: Megaphone, name: "Ad Generator", desc: "TikTok, Reels and Meta ad scripts with hooks and overlays.", live: false },
+  { to: "/tools/product-validator", icon: CheckCircle2, name: "Product Validator", desc: "Score any product across 24 dropshipping criteria before you commit.", live: true },
+  { to: "/tools/profit-calculator", icon: Calculator, name: "Profit Calculator", desc: "Margins, breakeven ad spend and projected profit on cost vs sell price.", live: true },
+  { to: "/tools/ad-generator", icon: Megaphone, name: "Ad Generator", desc: "TikTok, Reels and Meta ad scripts with hooks and overlays.", live: true },
   { icon: ImageIcon, name: "Image Studio", desc: "Generate clean hero images for your store from a product.", live: false },
 ];
 

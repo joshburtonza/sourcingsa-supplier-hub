@@ -25,7 +25,10 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ToolsIndexRouteImport } from './routes/tools.index'
+import { Route as ToolsProfitCalculatorRouteImport } from './routes/tools.profit-calculator'
+import { Route as ToolsProductValidatorRouteImport } from './routes/tools.product-validator'
 import { Route as ToolsNicheFinderRouteImport } from './routes/tools.niche-finder'
+import { Route as ToolsAdGeneratorRouteImport } from './routes/tools.ad-generator'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
 import { Route as AdminSupportRouteImport } from './routes/admin.support'
 import { Route as AdminRequestsRouteImport } from './routes/admin.requests'
@@ -34,7 +37,9 @@ import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminMembersRouteImport } from './routes/admin.members'
 import { Route as ApiToolsRecommendNicheRouteImport } from './routes/api.tools.recommend-niche'
 import { Route as ApiToolsNicheFinderRouteImport } from './routes/api.tools.niche-finder'
+import { Route as ApiToolsAiToolRouteImport } from './routes/api.tools.ai-tool'
 import { Route as ApiDropstoreLinkRouteImport } from './routes/api.dropstore.link'
+import { Route as ApiCatalogRecommendRouteImport } from './routes/api.catalog.recommend'
 import { Route as ApiWebhooksShopifyOrdersPaidRouteImport } from './routes/api.webhooks.shopify.orders-paid'
 
 const TrendingRoute = TrendingRouteImport.update({
@@ -117,9 +122,24 @@ const ToolsIndexRoute = ToolsIndexRouteImport.update({
   path: '/tools/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ToolsProfitCalculatorRoute = ToolsProfitCalculatorRouteImport.update({
+  id: '/tools/profit-calculator',
+  path: '/tools/profit-calculator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToolsProductValidatorRoute = ToolsProductValidatorRouteImport.update({
+  id: '/tools/product-validator',
+  path: '/tools/product-validator',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToolsNicheFinderRoute = ToolsNicheFinderRouteImport.update({
   id: '/tools/niche-finder',
   path: '/tools/niche-finder',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToolsAdGeneratorRoute = ToolsAdGeneratorRouteImport.update({
+  id: '/tools/ad-generator',
+  path: '/tools/ad-generator',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductIdRoute = ProductIdRouteImport.update({
@@ -162,9 +182,19 @@ const ApiToolsNicheFinderRoute = ApiToolsNicheFinderRouteImport.update({
   path: '/api/tools/niche-finder',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiToolsAiToolRoute = ApiToolsAiToolRouteImport.update({
+  id: '/api/tools/ai-tool',
+  path: '/api/tools/ai-tool',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDropstoreLinkRoute = ApiDropstoreLinkRouteImport.update({
   id: '/api/dropstore/link',
   path: '/api/dropstore/link',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCatalogRecommendRoute = ApiCatalogRecommendRouteImport.update({
+  id: '/api/catalog/recommend',
+  path: '/api/catalog/recommend',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiWebhooksShopifyOrdersPaidRoute =
@@ -196,9 +226,14 @@ export interface FileRoutesByFullPath {
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/support': typeof AdminSupportRoute
   '/product/$id': typeof ProductIdRoute
+  '/tools/ad-generator': typeof ToolsAdGeneratorRoute
   '/tools/niche-finder': typeof ToolsNicheFinderRoute
+  '/tools/product-validator': typeof ToolsProductValidatorRoute
+  '/tools/profit-calculator': typeof ToolsProfitCalculatorRoute
   '/tools/': typeof ToolsIndexRoute
+  '/api/catalog/recommend': typeof ApiCatalogRecommendRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
+  '/api/tools/ai-tool': typeof ApiToolsAiToolRoute
   '/api/tools/niche-finder': typeof ApiToolsNicheFinderRoute
   '/api/tools/recommend-niche': typeof ApiToolsRecommendNicheRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
@@ -225,9 +260,14 @@ export interface FileRoutesByTo {
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/support': typeof AdminSupportRoute
   '/product/$id': typeof ProductIdRoute
+  '/tools/ad-generator': typeof ToolsAdGeneratorRoute
   '/tools/niche-finder': typeof ToolsNicheFinderRoute
+  '/tools/product-validator': typeof ToolsProductValidatorRoute
+  '/tools/profit-calculator': typeof ToolsProfitCalculatorRoute
   '/tools': typeof ToolsIndexRoute
+  '/api/catalog/recommend': typeof ApiCatalogRecommendRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
+  '/api/tools/ai-tool': typeof ApiToolsAiToolRoute
   '/api/tools/niche-finder': typeof ApiToolsNicheFinderRoute
   '/api/tools/recommend-niche': typeof ApiToolsRecommendNicheRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
@@ -255,9 +295,14 @@ export interface FileRoutesById {
   '/admin/requests': typeof AdminRequestsRoute
   '/admin/support': typeof AdminSupportRoute
   '/product/$id': typeof ProductIdRoute
+  '/tools/ad-generator': typeof ToolsAdGeneratorRoute
   '/tools/niche-finder': typeof ToolsNicheFinderRoute
+  '/tools/product-validator': typeof ToolsProductValidatorRoute
+  '/tools/profit-calculator': typeof ToolsProfitCalculatorRoute
   '/tools/': typeof ToolsIndexRoute
+  '/api/catalog/recommend': typeof ApiCatalogRecommendRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
+  '/api/tools/ai-tool': typeof ApiToolsAiToolRoute
   '/api/tools/niche-finder': typeof ApiToolsNicheFinderRoute
   '/api/tools/recommend-niche': typeof ApiToolsRecommendNicheRoute
   '/api/webhooks/shopify/orders-paid': typeof ApiWebhooksShopifyOrdersPaidRoute
@@ -286,9 +331,14 @@ export interface FileRouteTypes {
     | '/admin/requests'
     | '/admin/support'
     | '/product/$id'
+    | '/tools/ad-generator'
     | '/tools/niche-finder'
+    | '/tools/product-validator'
+    | '/tools/profit-calculator'
     | '/tools/'
+    | '/api/catalog/recommend'
     | '/api/dropstore/link'
+    | '/api/tools/ai-tool'
     | '/api/tools/niche-finder'
     | '/api/tools/recommend-niche'
     | '/api/webhooks/shopify/orders-paid'
@@ -315,9 +365,14 @@ export interface FileRouteTypes {
     | '/admin/requests'
     | '/admin/support'
     | '/product/$id'
+    | '/tools/ad-generator'
     | '/tools/niche-finder'
+    | '/tools/product-validator'
+    | '/tools/profit-calculator'
     | '/tools'
+    | '/api/catalog/recommend'
     | '/api/dropstore/link'
+    | '/api/tools/ai-tool'
     | '/api/tools/niche-finder'
     | '/api/tools/recommend-niche'
     | '/api/webhooks/shopify/orders-paid'
@@ -344,9 +399,14 @@ export interface FileRouteTypes {
     | '/admin/requests'
     | '/admin/support'
     | '/product/$id'
+    | '/tools/ad-generator'
     | '/tools/niche-finder'
+    | '/tools/product-validator'
+    | '/tools/profit-calculator'
     | '/tools/'
+    | '/api/catalog/recommend'
     | '/api/dropstore/link'
+    | '/api/tools/ai-tool'
     | '/api/tools/niche-finder'
     | '/api/tools/recommend-niche'
     | '/api/webhooks/shopify/orders-paid'
@@ -369,9 +429,14 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   TrendingRoute: typeof TrendingRoute
   ProductIdRoute: typeof ProductIdRoute
+  ToolsAdGeneratorRoute: typeof ToolsAdGeneratorRoute
   ToolsNicheFinderRoute: typeof ToolsNicheFinderRoute
+  ToolsProductValidatorRoute: typeof ToolsProductValidatorRoute
+  ToolsProfitCalculatorRoute: typeof ToolsProfitCalculatorRoute
   ToolsIndexRoute: typeof ToolsIndexRoute
+  ApiCatalogRecommendRoute: typeof ApiCatalogRecommendRoute
   ApiDropstoreLinkRoute: typeof ApiDropstoreLinkRoute
+  ApiToolsAiToolRoute: typeof ApiToolsAiToolRoute
   ApiToolsNicheFinderRoute: typeof ApiToolsNicheFinderRoute
   ApiToolsRecommendNicheRoute: typeof ApiToolsRecommendNicheRoute
   ApiWebhooksShopifyOrdersPaidRoute: typeof ApiWebhooksShopifyOrdersPaidRoute
@@ -491,11 +556,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tools/profit-calculator': {
+      id: '/tools/profit-calculator'
+      path: '/tools/profit-calculator'
+      fullPath: '/tools/profit-calculator'
+      preLoaderRoute: typeof ToolsProfitCalculatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/product-validator': {
+      id: '/tools/product-validator'
+      path: '/tools/product-validator'
+      fullPath: '/tools/product-validator'
+      preLoaderRoute: typeof ToolsProductValidatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tools/niche-finder': {
       id: '/tools/niche-finder'
       path: '/tools/niche-finder'
       fullPath: '/tools/niche-finder'
       preLoaderRoute: typeof ToolsNicheFinderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/ad-generator': {
+      id: '/tools/ad-generator'
+      path: '/tools/ad-generator'
+      fullPath: '/tools/ad-generator'
+      preLoaderRoute: typeof ToolsAdGeneratorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/product/$id': {
@@ -554,11 +640,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiToolsNicheFinderRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tools/ai-tool': {
+      id: '/api/tools/ai-tool'
+      path: '/api/tools/ai-tool'
+      fullPath: '/api/tools/ai-tool'
+      preLoaderRoute: typeof ApiToolsAiToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/dropstore/link': {
       id: '/api/dropstore/link'
       path: '/api/dropstore/link'
       fullPath: '/api/dropstore/link'
       preLoaderRoute: typeof ApiDropstoreLinkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/catalog/recommend': {
+      id: '/api/catalog/recommend'
+      path: '/api/catalog/recommend'
+      fullPath: '/api/catalog/recommend'
+      preLoaderRoute: typeof ApiCatalogRecommendRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/webhooks/shopify/orders-paid': {
@@ -606,9 +706,14 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   TrendingRoute: TrendingRoute,
   ProductIdRoute: ProductIdRoute,
+  ToolsAdGeneratorRoute: ToolsAdGeneratorRoute,
   ToolsNicheFinderRoute: ToolsNicheFinderRoute,
+  ToolsProductValidatorRoute: ToolsProductValidatorRoute,
+  ToolsProfitCalculatorRoute: ToolsProfitCalculatorRoute,
   ToolsIndexRoute: ToolsIndexRoute,
+  ApiCatalogRecommendRoute: ApiCatalogRecommendRoute,
   ApiDropstoreLinkRoute: ApiDropstoreLinkRoute,
+  ApiToolsAiToolRoute: ApiToolsAiToolRoute,
   ApiToolsNicheFinderRoute: ApiToolsNicheFinderRoute,
   ApiToolsRecommendNicheRoute: ApiToolsRecommendNicheRoute,
   ApiWebhooksShopifyOrdersPaidRoute: ApiWebhooksShopifyOrdersPaidRoute,
