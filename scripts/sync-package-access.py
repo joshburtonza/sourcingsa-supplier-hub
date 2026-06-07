@@ -121,6 +121,29 @@ def main():
     out = q(HUB, sql)
     log("roster=%d  hub_growth_elite=%s" % (len(roster), out[0]["hub_growth_elite"] if out else "?"))
 
+    # 3) Catch-all: provision ANY entitled member (in paid_customers) with no account yet
+    #    — e.g. R99 direct payers added by the orders/paid webhook who never self-signed-up.
+    gap = q(HUB, """
+    do $$
+    declare rec record; res jsonb;
+    begin
+      for rec in
+        select email from public.paid_customers pc
+        where not exists (select 1 from auth.users u where lower(u.email) = lower(pc.email))
+      loop
+        res := public.register_paid_user(rec.email, '%s');
+        if coalesce((res->>'ok')::boolean, false) then
+          insert into public.profiles (id, email, must_change_password)
+          select id, lower(rec.email), true from auth.users where lower(email) = lower(rec.email)
+          on conflict (id) do update set must_change_password = true;
+        end if;
+      end loop;
+    end $$;
+    select count(*) remaining from public.paid_customers pc
+    where not exists (select 1 from auth.users u where lower(u.email) = lower(pc.email));
+    """ % TEMP_PW)
+    log("paid-without-account remaining after sync: %s" % (gap[0]["remaining"] if gap else "?"))
+
 
 if __name__ == "__main__":
     try:
