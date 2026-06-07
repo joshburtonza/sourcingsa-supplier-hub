@@ -73,6 +73,16 @@ Query it two ways:
 Idempotent (dedupe by Temu `source_id` + name vs the live DB). Browse filters server-side with
 pagination + the `hub_categories()` RPC, so the catalogue scales past Supabase's 1000-row select cap.
 
+## Automation
+
+- **Package-access sync** (`scripts/sync-package-access.py`): grants hub access to every
+  **Growth + Elite** DropStore member automatically. Reads package tiers from the DropStore
+  DB (`dropstore_shopify_orders` + `dropstore_tier_upgrades`), provisions any missing member
+  into the hub (paid_customers + `register_paid_user` + profile w/ `dropstore_tier` and
+  must-change-password). Idempotent. **Starters are excluded** (Josh, 2026-06-07).
+  Runs hourly via LaunchAgent `com.amalfi.zahub-package-sync` (logs:
+  `~/Library/Logs/zahub-package-sync.log`). New Growth/Elite buyers get access within the hour.
+
 ## Credentials (never hard-code; all already on the machine)
 
 `.env` (repo root): `SHOPIFY_CLIENT_ID/SECRET/STORE`, `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`,
