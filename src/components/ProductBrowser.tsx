@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type Product } from "./ProductCard";
 const SearchIcon = () => (
@@ -28,6 +28,11 @@ const PRICE_RANGES = [
   { label: "Over R1000", min: 1000, max: Infinity },
 ];
 
+// Members-safe columns, never select("*") (that would ship internal supplier_note).
+const CARD_COLS =
+  "id,name,category,cost_price,sell_price,image_url,images,shopify_url,checkout_url,description,stock_status,active,sales_count,trending";
+const PAGE = 48;
+
 export function ProductBrowser({
   trendingOnly = false,
   rankItems = false,
@@ -38,49 +43,75 @@ export function ProductBrowser({
   emptyMessage?: string;
 }) {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<string[]>(["All"]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [priceIdx, setPriceIdx] = useState(0);
+  const [page, setPage] = useState(0);
 
+  // Full category list via RPC — the browse query is capped at 1000 rows, so the
+  // dropdown can't be derived from it once the catalogue is larger than that.
   useEffect(() => {
     (async () => {
-      setLoading(true);
-      // Explicit member-safe columns, never select("*") here, that would
-      // ship the internal `supplier_note` field to every member's browser.
-      let q = supabase
-        .from("products")
-        .select("id,name,category,cost_price,sell_price,image_url,images,shopify_url,checkout_url,description,stock_status,active,sales_count,trending")
-        .eq("active", true)
-        // Products with a real image lead; the imageless legacy items sort last
-        // (nullsFirst:false) so the catalogue never opens on placeholder cards.
-        .order("image_url", { ascending: false, nullsFirst: false });
-      if (trendingOnly) q = q.order("sales_count", { ascending: false });
-      else q = q.order("created_at", { ascending: false });
-      const { data, error } = await q;
-      if (error) console.error("[products] load failed", error.message);
-      setProducts((data as Product[]) ?? []);
-      setLoading(false);
+      const { data, error } = await supabase.rpc("hub_categories");
+      if (error) {
+        console.error("[products] categories load failed", error.message);
+        return;
+      }
+      const cats = ((data as { category: string }[] | null) ?? [])
+        .map((c) => c.category)
+        .filter(Boolean);
+      setCategories(["All", ...cats]);
     })();
-  }, [trendingOnly]);
+  }, []);
 
-  // Derive the category list from the real catalogue so the dropdown options
-  // always match actual product.category values (a hardcoded list silently
-  // breaks the filter whenever the catalogue's categories differ).
-  const categories = useMemo(
-    () => ["All", ...Array.from(new Set(products.map((p) => p.category).filter(Boolean))).sort((a, b) => a.localeCompare(b))],
-    [products],
-  );
+  // Debounce the search box so each keystroke doesn't fire a query.
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
 
-  const filtered = useMemo(() => {
-    const pr = PRICE_RANGES[priceIdx];
-    return products.filter((p) => {
-      const okCat = category === "All" || p.category === category;
-      const okSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
-      const okPrice = Number(p.cost_price) >= pr.min && Number(p.cost_price) <= pr.max;
-      return okCat && okSearch && okPrice;
-    });
-  }, [products, search, category, priceIdx]);
+  // Any filter change resets pagination to the first page.
+  useEffect(() => {
+    setPage(0);
+  }, [category, priceIdx, debouncedSearch, trendingOnly]);
+
+  // Server-side filtered + paginated fetch. This is what scales past the 1000-row
+  // cap: the database does the category/search/price filtering, not the browser.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (page === 0) setLoading(true);
+      else setLoadingMore(true);
+      const pr = PRICE_RANGES[priceIdx];
+      let q = supabase.from("products").select(CARD_COLS).eq("active", true);
+      if (trendingOnly) q = q.eq("trending", true);
+      if (category !== "All") q = q.eq("category", category);
+      const term = debouncedSearch.trim();
+      if (term) q = q.ilike("name", `%${term}%`);
+      if (pr.min > 0) q = q.gte("cost_price", pr.min);
+      if (pr.max !== Infinity) q = q.lte("cost_price", pr.max);
+      q = q
+        .order("sales_count", { ascending: false })
+        .order("created_at", { ascending: false })
+        .range(page * PAGE, page * PAGE + PAGE - 1);
+      const { data, error } = await q;
+      if (cancelled) return;
+      if (error) console.error("[products] load failed", error.message);
+      const rows = (data as Product[]) ?? [];
+      setProducts((prev) => (page === 0 ? rows : [...prev, ...rows]));
+      setHasMore(rows.length === PAGE);
+      setLoading(false);
+      setLoadingMore(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [category, priceIdx, debouncedSearch, trendingOnly, page]);
 
   return (
     <div className="space-y-6">
@@ -124,14 +155,27 @@ export function ProductBrowser({
         <div className="grid place-items-center py-20">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-[color:var(--border)] border-t-[color:var(--primary)]" />
         </div>
-      ) : filtered.length === 0 ? (
+      ) : products.length === 0 ? (
         <p className="py-12 text-center text-[color:var(--muted-foreground)]">{emptyMessage}</p>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((p, i) => (
-            <ProductCard key={p.id} product={p} rank={rankItems ? i + 1 : undefined} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((p, i) => (
+              <ProductCard key={p.id} product={p} rank={rankItems ? i + 1 : undefined} />
+            ))}
+          </div>
+          {hasMore && (
+            <div className="grid place-items-center pt-2">
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={loadingMore}
+                className="inline-flex items-center gap-2 rounded-lg border border-[color:var(--border)] bg-[color:var(--card)] px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-[color:var(--primary)] disabled:opacity-60"
+              >
+                {loadingMore ? "Loading…" : "Load more products"}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
