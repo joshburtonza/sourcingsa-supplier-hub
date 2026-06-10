@@ -24,16 +24,20 @@ type Profile = {
   phone: string | null;
   store_name: string | null;
   store_url: string | null;
+  id_number: string | null;
   dropstore_email: string | null;
   dropstore_account_id: string | null;
   dropstore_tier: string | null;
   dropstore_linked_at: string | null;
 };
 
+const PROFILE_COLS =
+  "full_name, phone, store_name, store_url, id_number, dropstore_email, dropstore_account_id, dropstore_tier, dropstore_linked_at";
+
 function Page() {
   const { user, email, isAdmin } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [form, setForm] = useState({ full_name: "", phone: "", store_name: "", store_url: "" });
+  const [form, setForm] = useState({ full_name: "", phone: "", store_name: "", store_url: "", id_number: "" });
   const [savedAt, setSavedAt] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileErr, setProfileErr] = useState<string | null>(null);
@@ -48,7 +52,7 @@ function Page() {
     (async () => {
       const { data, error } = await supabase
         .from("profiles")
-        .select("full_name, phone, store_name, store_url, dropstore_email, dropstore_account_id, dropstore_tier, dropstore_linked_at")
+        .select(PROFILE_COLS)
         .eq("id", user.id)
         .maybeSingle();
       if (error) {
@@ -63,6 +67,7 @@ function Page() {
           phone: p.phone ?? "",
           store_name: p.store_name ?? "",
           store_url: p.store_url ?? "",
+          id_number: p.id_number ?? "",
         });
       }
       setDsEmail(p?.dropstore_email ?? email ?? "");
@@ -82,6 +87,7 @@ function Page() {
           phone: form.phone.trim() || null,
           store_name: form.store_name.trim() || null,
           store_url: form.store_url.trim() || null,
+          id_number: form.id_number.trim() || null,
         })
         .eq("id", user.id);
       if (error) {
@@ -131,7 +137,7 @@ function Page() {
       if (user?.id) {
         const { data, error } = await supabase
           .from("profiles")
-          .select("full_name, phone, store_name, store_url, dropstore_email, dropstore_account_id, dropstore_tier, dropstore_linked_at")
+          .select(PROFILE_COLS)
           .eq("id", user.id)
           .maybeSingle();
         if (error) console.error("[account] profile refetch after link failed", error.message);
@@ -172,6 +178,23 @@ function Page() {
           <Field label="Phone"><input className="input focus-glow" value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} placeholder="071 234 5678" /></Field>
           <Field label="Store name"><input className="input focus-glow" value={form.store_name} onChange={(e) => setForm((f) => ({ ...f, store_name: e.target.value }))} placeholder="Your store" /></Field>
           <Field label="Store URL"><input className="input focus-glow" value={form.store_url} onChange={(e) => setForm((f) => ({ ...f, store_url: e.target.value }))} placeholder="https://yourstore.co.za" /></Field>
+        </div>
+        <div className="mt-4 rounded-xl border border-[color:var(--primary)]/25 bg-[color:var(--primary)]/[0.06] p-4">
+          <Field label="ID number (for customs clearance)">
+            <input
+              className="input focus-glow"
+              value={form.id_number}
+              onChange={(e) => setForm((f) => ({ ...f, id_number: e.target.value.replace(/[^0-9]/g, "").slice(0, 13) }))}
+              placeholder="13-digit SA ID number"
+              inputMode="numeric"
+              autoComplete="off"
+            />
+          </Field>
+          <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted-foreground)]">
+            Your orders ship from international suppliers, so South African customs needs the recipient's ID number to
+            clear each parcel. Add yours here and we can place and ship your orders. It's used only for customs clearance
+            and delivery, stored securely, and never shared beyond the courier and customs authorities.
+          </p>
         </div>
         {profileErr && <div className="mt-4 rounded-lg border border-[color:var(--destructive)]/40 bg-[color:var(--destructive)]/10 px-3 py-2 text-sm text-[color:var(--destructive)]">{profileErr}</div>}
         <div className="mt-5 flex items-center gap-3">

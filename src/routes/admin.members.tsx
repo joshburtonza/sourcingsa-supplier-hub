@@ -18,6 +18,7 @@ type Profile = {
   email: string | null;
   full_name: string | null;
   store_name: string | null;
+  id_number: string | null;
   dropstore_email: string | null;
   dropstore_account_id: string | null;
   created_at: string;
@@ -36,7 +37,7 @@ function AdminMembers() {
     setLoading(true);
     setLoadErr(null);
     const [{ data: profs, error: pErr }, { data: roleRows, error: rErr }] = await Promise.all([
-      supabase.from("profiles").select("id, email, full_name, store_name, dropstore_email, dropstore_account_id, created_at").order("created_at", { ascending: false }),
+      supabase.from("profiles").select("id, email, full_name, store_name, id_number, dropstore_email, dropstore_account_id, created_at").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("user_id, role"),
     ]);
     if (pErr) console.error("[admin/members] profiles failed", pErr.message);
@@ -113,6 +114,7 @@ function AdminMembers() {
               <thead className="text-left text-xs uppercase tracking-wider text-[color:var(--muted-foreground)]">
                 <tr>
                   <th className="px-5 py-3">Member</th>
+                  <th className="px-5 py-3">ID number</th>
                   <th className="px-5 py-3">DropStore</th>
                   <th className="px-5 py-3">Joined</th>
                   <th className="px-5 py-3">Access</th>
@@ -130,6 +132,7 @@ function AdminMembers() {
                         <div className="text-white">{p.email ?? "-"}</div>
                         <div className="text-xs text-[color:var(--muted-foreground)]">{p.full_name || p.store_name || ""}</div>
                       </td>
+                      <td className="px-5 py-3 font-mono text-xs text-[color:var(--muted-foreground)]">{p.id_number || "-"}</td>
                       <td className="px-5 py-3 text-[color:var(--muted-foreground)]">
                         {p.dropstore_email ? (
                           <span className="inline-flex items-center gap-1.5 text-xs">
