@@ -180,7 +180,7 @@ function Page() {
           <Field label="Store URL"><input className="input focus-glow" value={form.store_url} onChange={(e) => setForm((f) => ({ ...f, store_url: e.target.value }))} placeholder="https://yourstore.co.za" /></Field>
         </div>
         <div className="mt-4 rounded-xl border border-[color:var(--primary)]/25 bg-[color:var(--primary)]/[0.06] p-4">
-          <Field label="ID number (for customs clearance)">
+          <Field label="ID number">
             <input
               className="input focus-glow"
               value={form.id_number}
@@ -190,10 +190,8 @@ function Page() {
               autoComplete="off"
             />
           </Field>
-          <p className="mt-2 text-xs leading-relaxed text-[color:var(--muted-foreground)]">
-            Your orders ship from international suppliers, so South African customs needs the recipient's ID number to
-            clear each parcel. Add yours here and we can place and ship your orders. It's used only for customs clearance
-            and delivery, stored securely, and never shared beyond the courier and customs authorities.
+          <p className="mt-2 text-xs text-[color:var(--muted-foreground)]">
+            Used for order fulfilment and to comply with regulations.
           </p>
         </div>
         {profileErr && <div className="mt-4 rounded-lg border border-[color:var(--destructive)]/40 bg-[color:var(--destructive)]/10 px-3 py-2 text-sm text-[color:var(--destructive)]">{profileErr}</div>}
