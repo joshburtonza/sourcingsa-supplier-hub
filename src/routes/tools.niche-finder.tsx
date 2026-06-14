@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Flame, ArrowLeft, Sparkles, TrendingUp, AlertTriangle, Package } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { getAccessToken } from "@/integrations/supabase/client";
 import { ProtectedShell } from "@/components/ProtectedShell";
 import { fmtZAR } from "@/lib/orders";
 
@@ -48,8 +48,7 @@ function NicheFinder() {
     setBusy(true);
     setNiches(null);
     try {
-      const { data: s } = await supabase.auth.getSession();
-      const token = s.session?.access_token;
+      const token = await getAccessToken();
       const res = await fetch("/api/tools/niche-finder", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token ?? ""}` },

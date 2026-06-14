@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/integrations/supabase/client";
+import { getCachedSession } from "@/integrations/supabase/client";
 import { CHECKOUT_URL } from "@/lib/checkout";
 import { MemberShell } from "./MemberSidebar";
 import { ChangePasswordGate } from "./ChangePasswordGate";
@@ -23,35 +23,21 @@ export function ProtectedShell({ children }: { children: ReactNode }) {
   const { session, isApproved, mustChangePassword, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
-  // Do NOT bounce on a transient null. This is an SSR app (the server render
-  // never has the session) and a slow/failed token refresh can momentarily
-  // resolve session:null even for a signed-in member. Before redirecting, poll
-  // getSession() a few times (re-reading the persisted session) and only kick to
-  // /login if it is STILL null after the retries. A single recheck still lost the
-  // race for some members — the dashboard rendered, then a transient null bounced
-  // them straight back. Retrying over ~1.2s lets the session settle; a genuinely
-  // signed-out user just waits a beat before landing on /login. (2026-06-14)
+  // Do NOT bounce on a transient null. useAuth reports session:null briefly during
+  // the SSR→hydrate handoff. Re-check the CACHED session once after a short grace
+  // before redirecting, and only kick to /login if it is still null. We use the
+  // skew-proof cache (getCachedSession), NOT supabase.auth.getSession() — getSession
+  // refreshes-on-read against the device clock and was part of the refresh storm
+  // that kicked clock-skewed members out (see client.ts header). (2026-06-14)
   useEffect(() => {
     if (loading || session) return;
     let alive = true;
-    void (async () => {
-      try {
-        for (let attempt = 0; attempt < 3 && alive; attempt++) {
-          const { data } = await supabase.auth.getSession();
-          if (!alive) return;
-          if (data.session) return; // session recovered — do not redirect
-          if (attempt < 2) await new Promise((r) => setTimeout(r, 400));
-        }
-      } catch (err) {
-        // getSession can reject (custom storage adapter throws on blocked/
-        // partitioned localStorage). Fail CLOSED: redirect to /login rather than
-        // stranding the user on the spinner forever.
-        console.error("[ProtectedShell] getSession failed; redirecting to /login", err);
-      }
-      if (alive) navigate({ to: "/login" });
-    })();
+    const t = setTimeout(() => {
+      if (alive && !getCachedSession()) navigate({ to: "/login" });
+    }, 500);
     return () => {
       alive = false;
+      clearTimeout(t);
     };
   }, [loading, session, navigate]);
 

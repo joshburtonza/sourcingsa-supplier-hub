@@ -1,23 +1,13 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, getAccessToken } from "@/integrations/supabase/client";
 import { ProductCard, type Product } from "./ProductCard";
 
-// Return a non-expired access token, refreshing if it's missing or within 60s
-// of expiry. Sending an empty/stale Bearer is what made approved members see a
-// blank catalogue (the server rejects it → no rows). Refreshing first removes
-// the clock-skew / not-yet-restored / near-expiry failure modes. (2026-06-14)
+// Skew-proof access token: client.ts caches the token and refreshes it on a
+// wall-clock interval, so we never call getSession()/refreshSession() per request
+// against the DEVICE clock (that storms on a fast clock and kicked members out).
+// The fetch below still does a single 401-retry for a genuinely-expired token.
 async function freshToken(): Promise<string | null> {
-  const { data: s } = await supabase.auth.getSession();
-  let token = s.session?.access_token ?? null;
-  const exp = s.session?.expires_at;
-  if (!token || (exp && exp * 1000 < Date.now() + 60_000)) {
-    const { data: r } = await supabase.auth.refreshSession();
-    // If the refresh blips (the session-restore race), keep the still-valid token
-    // we already had rather than nuking it to null — the route does its own 401
-    // retry, so a usable token must not be thrown away over a transient refresh.
-    token = r.session?.access_token ?? token;
-  }
-  return token;
+  return getAccessToken();
 }
 
 const SearchIcon = () => (

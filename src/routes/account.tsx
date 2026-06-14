@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { Loader2, CheckCircle2, Link2, ShieldCheck, Store } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, getAccessToken } from "@/integrations/supabase/client";
 import { ProtectedShell } from "@/components/ProtectedShell";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -110,8 +110,7 @@ function Page() {
     }
     setLinking(true);
     try {
-      const { data: sess } = await supabase.auth.getSession();
-      const token = sess.session?.access_token;
+      const token = await getAccessToken();
       if (!token) {
         setLinkMsg({ ok: false, text: "Session expired, sign in again." });
         return;

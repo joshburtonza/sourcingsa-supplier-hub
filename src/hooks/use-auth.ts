@@ -105,30 +105,26 @@ export function useAuth(): AuthState {
       setMustChange(mc);
     }
 
-    // Seed from the persisted session (Supabase already restored from
-    // localStorage at this point, persistSession:true in the client).
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (cancelled) return;
-      setSession(data.session);
-      if (data.session?.user?.id) await hydrate(data.session.user.id);
-      if (!cancelled) setLoading(false);
-    });
-
-    // Live subscription, fires on sign-in, sign-out, token refresh, etc.
-    //
-    // The callback must stay synchronous and must NOT await a supabase query
-    // inside itself. The v2 client holds an internal lock while running
-    // onAuthStateChange handlers; calling another supabase method here needs
-    // the same lock and deadlocks — signInWithPassword never resolves and the
-    // UI hangs on "Signing in...". Deferring with setTimeout(0) runs the
-    // queries after the lock releases.
     const clearAuth = () => {
       setSession(null);
       setRoles({ approved: false, admin: false });
       setMustChange(false);
     };
 
-    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+    // Single source of truth: onAuthStateChange. We deliberately do NOT call
+    // supabase.auth.getSession() to seed — getSession() refreshes-on-read against
+    // the DEVICE clock and was part of the refresh-storm on skewed clocks (see
+    // client.ts header). onAuthStateChange fires INITIAL_SESSION immediately on
+    // subscribe with the stored session (no refresh, since autoRefreshToken is off),
+    // so it both seeds the initial state and tracks every later change.
+    //
+    // The callback must stay synchronous and must NOT await a supabase query inside
+    // itself: the v2 client holds a lock while running handlers, so a nested call
+    // deadlocks (signInWithPassword hangs). Defer DB role reads with setTimeout(0).
+    // A null session here is genuine (INITIAL_SESSION-not-logged-in or SIGNED_OUT);
+    // TOKEN_REFRESHED always carries a session, so there are no spurious nulls to
+    // guard once the clock-driven storm is gone.
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       if (cancelled) return;
       if (s) {
         setSession(s);
@@ -136,39 +132,10 @@ export function useAuth(): AuthState {
         setTimeout(() => {
           if (!cancelled) void hydrate(uid);
         }, 0);
-        return;
-      }
-      // s is null. A real sign-out clears immediately. But supabase-js also emits
-      // transient null sessions (INITIAL_SESSION ordering, a token-refresh blip)
-      // right after sign-in — taking those at face value flips session→null and
-      // the dashboard "flashes then bounces" back to /login. For any non-SIGNED_OUT
-      // null, re-verify with getSession (deferred — never await inside this callback,
-      // the v2 client holds a lock here) before dropping a session that's still good.
-      if (event === "SIGNED_OUT") {
+      } else {
         clearAuth();
-        return;
       }
-      setTimeout(() => {
-        if (cancelled) return;
-        void supabase.auth
-          .getSession()
-          .then(({ data }) => {
-            if (cancelled) return;
-            if (data.session) {
-              setSession(data.session);
-              void hydrate(data.session.user.id);
-            } else {
-              clearAuth();
-            }
-          })
-          .catch((err) => {
-            // getSession can reject (custom storage adapter throws on blocked/
-            // partitioned localStorage). Don't silently swallow it: log, and leave
-            // the existing session state untouched — ProtectedShell's own recheck
-            // is the gate and fails closed, so we don't risk a stale-elevated state.
-            if (!cancelled) console.error("[use-auth] deferred getSession re-verify failed", err);
-          });
-      }, 0);
+      setLoading(false);
     });
 
     return () => {

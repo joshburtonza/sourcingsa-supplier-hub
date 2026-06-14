@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { Megaphone, ArrowLeft, Sparkles } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { getAccessToken } from "@/integrations/supabase/client";
 import { ProtectedShell } from "@/components/ProtectedShell";
 
 export const Route = createFileRoute("/tools/ad-generator")({
@@ -32,10 +32,10 @@ function AdGenerator() {
     setBusy(true);
     setAds(null);
     try {
-      const { data: s } = await supabase.auth.getSession();
+      const token = await getAccessToken();
       const res = await fetch("/api/tools/ai-tool", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${s.session?.access_token ?? ""}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token ?? ""}` },
         body: JSON.stringify({ tool: "ad_generator", input }),
       });
       const data = (await res.json()) as { ok: boolean; error?: string; result?: Ads };

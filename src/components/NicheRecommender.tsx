@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Sparkles, TrendingUp, AlertTriangle, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { getAccessToken } from "@/integrations/supabase/client";
 import { ProductCard, type Product } from "@/components/ProductCard";
 
 type Niche = { name: string; fit: string; category: string; adAngle: string; risk: string; riskLevel: "low" | "medium" | "high" };
@@ -27,10 +27,10 @@ export function NicheRecommender() {
     setBusy(true);
     setResult(null);
     try {
-      const { data: s } = await supabase.auth.getSession();
+      const token = await getAccessToken();
       const res = await fetch("/api/tools/recommend-niche", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${s.session?.access_token ?? ""}` },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token ?? ""}` },
         body: JSON.stringify({ interests: interests.trim() }),
       });
       const data = (await res.json()) as { ok: boolean; error?: string } & Partial<Result>;
