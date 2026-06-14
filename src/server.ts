@@ -66,12 +66,29 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   return brandedErrorResponse();
 }
 
+// Never let the SSR HTML document be cached (browser heuristic cache OR a CF edge
+// rule). The document references content-hashed JS/CSS, so a stale cached document
+// pins a user to an OLD bundle even after a deploy — which is how a fixed client can
+// fail to reach a member until they fully close the tab. Hashed assets are immutable
+// and keep their own long cache; we only force-revalidate the HTML entrypoint.
+function withFreshHtml(response: Response): Response {
+  const ct = response.headers.get("content-type") ?? "";
+  if (!ct.includes("text/html")) return response;
+  const headers = new Headers(response.headers);
+  headers.set("Cache-Control", "no-store, must-revalidate");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return withFreshHtml(await normalizeCatastrophicSsrResponse(response));
     } catch (error) {
       console.error(error);
       return brandedErrorResponse();
