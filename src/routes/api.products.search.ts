@@ -102,6 +102,14 @@ export const Route = createFileRoute("/api/products/search")({
         }
 
         const products = data ?? [];
+        // Diagnostic: turns a "category shows blank" report into a one-line log
+        // (which category + filters + row count) instead of guesswork. No PII —
+        // user id prefix only, never email.
+        console.log(
+          `[products-search] ok user=${userId.slice(0, 8)} cat=${JSON.stringify(category)} ` +
+            `price=${Number(body.priceIdx ?? 0)} trending=${Boolean(body.trendingOnly)} page=${page} ` +
+            `terms=${terms.length} -> ${products.length} rows`,
+        );
         return json({ ok: true, products, hasMore: products.length === PAGE_SIZE });
       },
     },
