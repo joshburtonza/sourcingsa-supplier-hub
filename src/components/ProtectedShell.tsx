@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 import { CHECKOUT_URL } from "@/lib/checkout";
 import { MemberShell } from "./MemberSidebar";
 import { ChangePasswordGate } from "./ChangePasswordGate";
@@ -22,8 +23,21 @@ export function ProtectedShell({ children }: { children: ReactNode }) {
   const { session, isApproved, mustChangePassword, loading, signOut } = useAuth();
   const navigate = useNavigate();
 
+  // Do NOT bounce on a transient null. This is an SSR app (the server render
+  // never has the session) and a slow/failed token refresh can momentarily
+  // resolve session:null even for a signed-in member. Before redirecting, do a
+  // second getSession() (which forces an autoRefresh) and only kick to /login if
+  // there is STILL no session. This kills the "signs in then gets kicked out"
+  // loop caused by the SSR→hydrate race and flaky refreshes. (2026-06-14)
   useEffect(() => {
-    if (!loading && !session) navigate({ to: "/login" });
+    if (loading || session) return;
+    let alive = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (alive && !data.session) navigate({ to: "/login" });
+    });
+    return () => {
+      alive = false;
+    };
   }, [loading, session, navigate]);
 
   if (loading || !session) {

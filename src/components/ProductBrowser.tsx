@@ -1,6 +1,22 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard, type Product } from "./ProductCard";
+
+// Return a non-expired access token, refreshing if it's missing or within 60s
+// of expiry. Sending an empty/stale Bearer is what made approved members see a
+// blank catalogue (the server rejects it → no rows). Refreshing first removes
+// the clock-skew / not-yet-restored / near-expiry failure modes. (2026-06-14)
+async function freshToken(): Promise<string | null> {
+  const { data: s } = await supabase.auth.getSession();
+  let token = s.session?.access_token ?? null;
+  const exp = s.session?.expires_at;
+  if (!token || (exp && exp * 1000 < Date.now() + 60_000)) {
+    const { data: r } = await supabase.auth.refreshSession();
+    token = r.session?.access_token ?? null;
+  }
+  return token;
+}
+
 const SearchIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -28,11 +44,6 @@ const PRICE_RANGES = [
   { label: "Over R1000", min: 1000, max: Infinity },
 ];
 
-// Members-safe columns, never select("*") (that would ship internal supplier_note).
-const CARD_COLS =
-  "id,name,category,cost_price,sell_price,image_url,images,shopify_url,checkout_url,description,stock_status,active,sales_count,trending";
-const PAGE = 48;
-
 export function ProductBrowser({
   trendingOnly = false,
   rankItems = false,
@@ -52,6 +63,7 @@ export function ProductBrowser({
   const [category, setCategory] = useState("All");
   const [priceIdx, setPriceIdx] = useState(0);
   const [page, setPage] = useState(0);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Full category list via RPC — the browse query is capped at 1000 rows, so the
   // dropdown can't be derived from it once the catalogue is larger than that.
@@ -87,26 +99,63 @@ export function ProductBrowser({
     (async () => {
       if (page === 0) setLoading(true);
       else setLoadingMore(true);
-      const pr = PRICE_RANGES[priceIdx];
-      let q = supabase.from("products").select(CARD_COLS).eq("active", true);
-      if (trendingOnly) q = q.eq("trending", true);
-      if (category !== "All") q = q.eq("category", category);
-      const term = debouncedSearch.trim();
-      if (term) q = q.ilike("name", `%${term}%`);
-      if (pr.min > 0) q = q.gte("cost_price", pr.min);
-      if (pr.max !== Infinity) q = q.lte("cost_price", pr.max);
-      q = q
-        .order("sales_count", { ascending: false })
-        .order("created_at", { ascending: false })
-        .range(page * PAGE, page * PAGE + PAGE - 1);
-      const { data, error } = await q;
-      if (cancelled) return;
-      if (error) console.error("[products] load failed", error.message);
-      const rows = (data as Product[]) ?? [];
-      setProducts((prev) => (page === 0 ? rows : [...prev, ...rows]));
-      setHasMore(rows.length === PAGE);
-      setLoading(false);
-      setLoadingMore(false);
+      try {
+        setErrorMessage(null);
+
+        const body = JSON.stringify({ category, priceIdx, search: debouncedSearch, trendingOnly, page });
+        const doSearch = (tok: string) =>
+          fetch("/api/products/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${tok}` },
+            body,
+          });
+
+        let token = await freshToken();
+        if (!token) {
+          // Authenticated UI but no usable token — never blank-out as if there
+          // are no products; tell them it's a connection issue.
+          if (!cancelled) {
+            setErrorMessage("Reconnecting to your account… please refresh the page.");
+            if (page === 0) setProducts([]);
+            setHasMore(false);
+          }
+          return;
+        }
+
+        let res = await doSearch(token);
+        // One auth retry: a stale/expired token (clock skew, tab refocus) gets a
+        // forced refresh and a single retry before we surface an error.
+        if (res.status === 401 || res.status === 403) {
+          const { data: r } = await supabase.auth.refreshSession();
+          const t2 = r.session?.access_token;
+          if (t2) res = await doSearch(t2);
+        }
+
+        // Guard res.json(): a Worker/proxy 502/504 returns HTML, not JSON, and an
+        // unguarded parse would mask the real status with "Unexpected token <".
+        const data = (await res.json().catch(() => ({ ok: false }))) as {
+          ok: boolean; error?: string; products?: Product[]; hasMore?: boolean;
+        };
+        if (cancelled) return;
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error ?? `Couldn't load products (status ${res.status}). Please try again.`);
+        }
+        const rows = data.products ?? [];
+        setProducts((prev) => (page === 0 ? rows : [...prev, ...rows]));
+        setHasMore(Boolean(data.hasMore));
+      } catch (e) {
+        if (cancelled) return;
+        const message = e instanceof Error ? e.message : "Couldn't load products. Please try again.";
+        console.error("[products] load failed", message);
+        setErrorMessage(message);
+        if (page === 0) setProducts([]);
+        setHasMore(false);
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
+      }
     })();
     return () => {
       cancelled = true;
@@ -150,6 +199,12 @@ export function ProductBrowser({
           ))}
         </select>
       </div>
+
+      {errorMessage && (
+        <div className="rounded-lg border border-[color:var(--destructive)]/40 bg-[color:var(--destructive)]/10 px-3 py-2 text-sm text-[color:var(--destructive)]">
+          {errorMessage}
+        </div>
+      )}
 
       {loading ? (
         <div className="grid place-items-center py-20">

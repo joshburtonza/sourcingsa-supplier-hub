@@ -29,13 +29,13 @@ export interface AuthState {
 
 type RoleRow = { role: "admin" | "approved" };
 
-async function fetchRoles(userId: string): Promise<{ approved: boolean; admin: boolean }> {
+async function fetchRoles(userId: string): Promise<{ approved: boolean; admin: boolean; errored: boolean }> {
   try {
-    const { data } = await (
+    const { data, error } = await (
       supabase as unknown as {
         from: (t: string) => {
           select: (cols: string) => {
-            eq: (col: string, val: string) => Promise<{ data: RoleRow[] | null }>;
+            eq: (col: string, val: string) => Promise<{ data: RoleRow[] | null; error: unknown }>;
           };
         };
       }
@@ -43,13 +43,15 @@ async function fetchRoles(userId: string): Promise<{ approved: boolean; admin: b
       .from("user_roles")
       .select("role")
       .eq("user_id", userId);
+    if (error) return { approved: false, admin: false, errored: true };
     const rows = data ?? [];
     return {
       approved: rows.some((r) => r.role === "approved" || r.role === "admin"),
       admin: rows.some((r) => r.role === "admin"),
+      errored: false,
     };
   } catch {
-    return { approved: false, admin: false };
+    return { approved: false, admin: false, errored: true };
   }
 }
 
@@ -89,11 +91,18 @@ export function useAuth(): AuthState {
     let cancelled = false;
 
     async function hydrate(userId: string) {
-      const [r, mc] = await Promise.all([fetchRoles(userId), fetchMustChange(userId)]);
-      if (!cancelled) {
-        setRoles(r);
-        setMustChange(mc);
+      let [r, mc] = await Promise.all([fetchRoles(userId), fetchMustChange(userId)]);
+      // A transient role-read failure must NOT downgrade an approved member to
+      // the pending-approval paywall. Retry once; if still errored, leave the
+      // existing role state untouched rather than flipping approved to false.
+      if (r.errored) {
+        const r2 = await fetchRoles(userId);
+        if (!r2.errored) r = r2;
+        else console.error("[use-auth] role read failed after retry; leaving role state unchanged");
       }
+      if (cancelled) return;
+      if (!r.errored) setRoles({ approved: r.approved, admin: r.admin });
+      setMustChange(mc);
     }
 
     // Seed from the persisted session (Supabase already restored from
