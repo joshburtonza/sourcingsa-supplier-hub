@@ -122,18 +122,53 @@ export function useAuth(): AuthState {
     // the same lock and deadlocks — signInWithPassword never resolves and the
     // UI hangs on "Signing in...". Deferring with setTimeout(0) runs the
     // queries after the lock releases.
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+    const clearAuth = () => {
+      setSession(null);
+      setRoles({ approved: false, admin: false });
+      setMustChange(false);
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
       if (cancelled) return;
-      setSession(s);
-      if (s?.user?.id) {
+      if (s) {
+        setSession(s);
         const uid = s.user.id;
         setTimeout(() => {
-          void hydrate(uid);
+          if (!cancelled) void hydrate(uid);
         }, 0);
-      } else {
-        setRoles({ approved: false, admin: false });
-        setMustChange(false);
+        return;
       }
+      // s is null. A real sign-out clears immediately. But supabase-js also emits
+      // transient null sessions (INITIAL_SESSION ordering, a token-refresh blip)
+      // right after sign-in — taking those at face value flips session→null and
+      // the dashboard "flashes then bounces" back to /login. For any non-SIGNED_OUT
+      // null, re-verify with getSession (deferred — never await inside this callback,
+      // the v2 client holds a lock here) before dropping a session that's still good.
+      if (event === "SIGNED_OUT") {
+        clearAuth();
+        return;
+      }
+      setTimeout(() => {
+        if (cancelled) return;
+        void supabase.auth
+          .getSession()
+          .then(({ data }) => {
+            if (cancelled) return;
+            if (data.session) {
+              setSession(data.session);
+              void hydrate(data.session.user.id);
+            } else {
+              clearAuth();
+            }
+          })
+          .catch((err) => {
+            // getSession can reject (custom storage adapter throws on blocked/
+            // partitioned localStorage). Don't silently swallow it: log, and leave
+            // the existing session state untouched — ProtectedShell's own recheck
+            // is the gate and fails closed, so we don't risk a stale-elevated state.
+            if (!cancelled) console.error("[use-auth] deferred getSession re-verify failed", err);
+          });
+      }, 0);
     });
 
     return () => {

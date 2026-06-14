@@ -25,16 +25,31 @@ export function ProtectedShell({ children }: { children: ReactNode }) {
 
   // Do NOT bounce on a transient null. This is an SSR app (the server render
   // never has the session) and a slow/failed token refresh can momentarily
-  // resolve session:null even for a signed-in member. Before redirecting, do a
-  // second getSession() (which forces an autoRefresh) and only kick to /login if
-  // there is STILL no session. This kills the "signs in then gets kicked out"
-  // loop caused by the SSR→hydrate race and flaky refreshes. (2026-06-14)
+  // resolve session:null even for a signed-in member. Before redirecting, poll
+  // getSession() a few times (re-reading the persisted session) and only kick to
+  // /login if it is STILL null after the retries. A single recheck still lost the
+  // race for some members — the dashboard rendered, then a transient null bounced
+  // them straight back. Retrying over ~1.2s lets the session settle; a genuinely
+  // signed-out user just waits a beat before landing on /login. (2026-06-14)
   useEffect(() => {
     if (loading || session) return;
     let alive = true;
-    supabase.auth.getSession().then(({ data }) => {
-      if (alive && !data.session) navigate({ to: "/login" });
-    });
+    void (async () => {
+      try {
+        for (let attempt = 0; attempt < 3 && alive; attempt++) {
+          const { data } = await supabase.auth.getSession();
+          if (!alive) return;
+          if (data.session) return; // session recovered — do not redirect
+          if (attempt < 2) await new Promise((r) => setTimeout(r, 400));
+        }
+      } catch (err) {
+        // getSession can reject (custom storage adapter throws on blocked/
+        // partitioned localStorage). Fail CLOSED: redirect to /login rather than
+        // stranding the user on the spinner forever.
+        console.error("[ProtectedShell] getSession failed; redirecting to /login", err);
+      }
+      if (alive) navigate({ to: "/login" });
+    })();
     return () => {
       alive = false;
     };
