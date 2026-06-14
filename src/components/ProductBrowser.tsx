@@ -12,7 +12,10 @@ async function freshToken(): Promise<string | null> {
   const exp = s.session?.expires_at;
   if (!token || (exp && exp * 1000 < Date.now() + 60_000)) {
     const { data: r } = await supabase.auth.refreshSession();
-    token = r.session?.access_token ?? null;
+    // If the refresh blips (the session-restore race), keep the still-valid token
+    // we already had rather than nuking it to null — the route does its own 401
+    // retry, so a usable token must not be thrown away over a transient refresh.
+    token = r.session?.access_token ?? token;
   }
   return token;
 }
@@ -64,6 +67,7 @@ export function ProductBrowser({
   const [priceIdx, setPriceIdx] = useState(0);
   const [page, setPage] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   // Full category list via RPC — the browse query is capped at 1000 rows, so the
   // dropdown can't be derived from it once the catalogue is larger than that.
@@ -160,7 +164,7 @@ export function ProductBrowser({
     return () => {
       cancelled = true;
     };
-  }, [category, priceIdx, debouncedSearch, trendingOnly, page]);
+  }, [category, priceIdx, debouncedSearch, trendingOnly, page, reloadKey]);
 
   return (
     <div className="space-y-6">
@@ -209,6 +213,21 @@ export function ProductBrowser({
       {loading ? (
         <div className="grid place-items-center py-20">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-[color:var(--border)] border-t-[color:var(--primary)]" />
+        </div>
+      ) : errorMessage && products.length === 0 ? (
+        // A failed load must NOT masquerade as an empty category ("No products
+        // available"). Show a retry — the banner above explains it's a connection
+        // issue, not that the category is genuinely empty.
+        <div className="grid place-items-center gap-3 py-12">
+          <p className="text-center text-sm text-[color:var(--muted-foreground)]">
+            We couldn&apos;t load these products just now. This is a connection hiccup, not an empty category.
+          </p>
+          <button
+            onClick={() => setReloadKey((k) => k + 1)}
+            className="inline-flex items-center gap-2 rounded-lg border border-[color:var(--border)] bg-[color:var(--card)] px-6 py-3 text-sm font-semibold text-white transition-colors hover:border-[color:var(--primary)]"
+          >
+            Try again
+          </button>
         </div>
       ) : products.length === 0 ? (
         <p className="py-12 text-center text-[color:var(--muted-foreground)]">{emptyMessage}</p>
