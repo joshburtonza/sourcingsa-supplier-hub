@@ -104,9 +104,22 @@ function refreshNow(client: ReturnType<typeof createSupabaseClient>): Promise<vo
   if (refreshing) return refreshing;
   refreshing = (async () => {
     try {
-      await client.auth.refreshSession();
+      // refreshSession() returns { data, error } and does NOT throw on an auth
+      // failure, so inspect the result. On a DEFINITIVE auth failure (revoked /
+      // already-used / expired refresh token) clear the cache so getAccessToken()
+      // returns null and the UI routes to re-login — otherwise a dead session would
+      // keep handing the stale token to non-retrying callers for up to REFRESH_MS.
+      // A transient/retryable failure keeps the cached session (storm-safe).
+      const { data, error } = await client.auth.refreshSession();
+      if (error) {
+        const transient = (error as { name?: string }).name === 'AuthRetryableFetchError';
+        if (!transient) cachedSession = null;
+        console.error('[Supabase] token refresh failed', error.message, transient ? '(transient)' : '(session invalid)');
+      } else if (data.session) {
+        cachedSession = data.session;
+      }
     } catch (e) {
-      console.error('[Supabase] token refresh failed', e instanceof Error ? e.message : e);
+      console.error('[Supabase] token refresh threw', e instanceof Error ? e.message : e);
     } finally {
       lastRefresh = Date.now();
       refreshing = null;
@@ -126,17 +139,21 @@ function startSkewProofAuth(client: ReturnType<typeof createSupabaseClient>) {
   authManaged = true;
 
   let booted = false;
-  client.auth.onAuthStateChange((_event, session) => {
+  client.auth.onAuthStateChange((event, session) => {
     cachedSession = session;
-    if (session) {
-      lastRefresh = Date.now();
-      // The stored token restored on load has an unknown true age, so force one
-      // refresh to start from a known-fresh token. Deferred + once (the resulting
-      // TOKEN_REFRESHED re-enters here but booted is already true → no loop).
-      if (!booted) {
-        booted = true;
-        setTimeout(() => { void refreshNow(client); }, 0);
-      }
+    if (!session) { lastRefresh = 0; return; }
+    // Only a server-validated refresh or a fresh sign-in yields a KNOWN-fresh token.
+    // The token RESTORED from storage on load (INITIAL_SESSION) has an UNKNOWN age,
+    // so leave the elapsed anchor stale (0) → the first getAccessToken() forces one
+    // (deduped, awaited) refresh before any request carries it. Without this, the
+    // first request after a reload could send an already-expired token, and every
+    // reload would instead refresh-on-401 — churning refresh tokens needlessly.
+    if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') lastRefresh = Date.now();
+    // Normalise the restored token once (true age unknown). Deduped with
+    // getAccessToken()'s refresh via the shared `refreshing` promise → no loop/storm.
+    if (!booted) {
+      booted = true;
+      setTimeout(() => { void refreshNow(client); }, 0);
     }
   });
 

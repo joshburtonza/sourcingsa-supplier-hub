@@ -49,11 +49,34 @@ export const Route = createFileRoute("/api/products/search")({
 
         const { data: userData, error: authErr } = await admin.auth.getUser(token);
         if (authErr) {
-          // Auth-service error (outage / rate-limit / network) is NOT a bad token.
-          // 503 routes the client into its generic retry, not the 401 force-refresh
-          // path (which would burn the retry and re-create the silent kick).
-          console.error("[products-search] token validation failed", String((authErr as { message?: string })?.message ?? authErr));
-          return json({ ok: false, error: "Couldn't verify your session just now. Please try again." }, 503);
+          // An EXPIRED / INVALID JWT is the common, RECOVERABLE case and MUST be a
+          // 401 — the client force-refreshes its token and retries on 401 (see
+          // ProductBrowser). Returning 503 here was the catalogue-blanking bug:
+          // 503 skips that refresh-retry, so once a member's token aged out
+          // (autoRefreshToken is off) the catalogue went blank with no recovery.
+          // Only a genuine auth-SERVICE failure (network / 5xx, not a token problem)
+          // stays 503 → the client's plain "try again", no wasted force-refresh.
+          // status is authoritative; a retryable/transport failure is NEVER a token
+          // problem (don't 401 an outage → no pointless force-refresh storm onto a
+          // struggling auth service). The message regex only decides when there is
+          // no numeric status, and is narrow on purpose (bare "session"/"invalid"
+          // appear in service-error strings and would misclassify an outage).
+          const status = (authErr as { status?: number }).status;
+          const name = String((authErr as { name?: string })?.name ?? "");
+          const msg = String((authErr as { message?: string })?.message ?? authErr);
+          const serviceFailure =
+            name === "AuthRetryableFetchError" ||
+            (typeof status === "number" && status >= 500) ||
+            /fetch|network|timeout|unavailable|temporarily/i.test(msg);
+          const tokenProblem =
+            !serviceFailure &&
+            (status === 401 ||
+              status === 403 ||
+              (status === undefined && /jwt|token|expired|invalid signature|bad_jwt/i.test(msg)));
+          console.error("[products-search] token validation failed", { status, name, msg, tokenProblem });
+          return tokenProblem
+            ? json({ ok: false, error: "Please sign in again." }, 401)
+            : json({ ok: false, error: "Couldn't verify your session just now. Please try again." }, 503);
         }
         const userId = userData?.user?.id;
         if (!userId) return json({ ok: false, error: "Please sign in again." }, 401);
