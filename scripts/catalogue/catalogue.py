@@ -175,15 +175,50 @@ def variant_display(options):
 
 
 APPAREL_RE = re.compile(
-    r"\b(romper|bodysuit|jumpsuit|onesie|outfit|clothing|clothes|sweater|"
-    r"pants set|dress|shirt|jacket|vest|tracksuit|overalls)\b",
+    r"\b(rompers?|bodysuits?|jumpsuits?|onesies?|outfits?|clothing|clothes|"
+    r"sweaters?|sweatshirts?|pants set|dresses?|shirts?|shorts?|jackets?|vests?|"
+    r"tracksuits?|overalls)\b",
     re.I,
 )
 
+KNOWN_COLORS = [
+    "Black", "White", "Cream", "Beige", "Khaki", "Brown", "Coffee", "Grey",
+    "Gray", "Green", "Blue", "Navy", "Pink", "Red", "Yellow", "Orange",
+    "Purple", "Coral", "Gold", "Silver",
+]
+
 
 def requires_variant_options(name, category, full):
-    """Sized apparel must not publish when the detail scrape missed choices."""
+    """Return true when the listing is apparel that needs a fit choice."""
     return bool(APPAREL_RE.search(f"{name} {category} {full}"))
+
+
+def inferred_apparel_options(text):
+    """Supply usable age bands when Temu blocks the detail-page variant pass."""
+    body = dedash(text or "")
+    if re.search(r"\b(?:maternity|women|women's)\b", body, re.I):
+        sizes = ["S", "M", "L", "XL"]
+    elif re.search(r"0\s*-\s*18\s*(?:m|months?)\b", body, re.I):
+        sizes = ["0-3M", "3-6M", "6-9M", "9-12M", "12-18M"]
+    elif re.search(r"0\s*-\s*12\s*(?:m|months?)\b", body, re.I):
+        sizes = ["0-3M", "3-6M", "6-9M", "9-12M"]
+    elif re.search(r"0\s*-\s*9\s*(?:m|months?)\b", body, re.I):
+        sizes = ["0-3M", "3-6M", "6-9M"]
+    elif re.search(r"\b(?:toddler|0\s*-\s*3\s*(?:y|years?))\b", body, re.I):
+        sizes = ["1-2Y", "2-3Y", "3-4Y"]
+    elif re.search(r"\b(?:newborn|infant|baby)\b", body, re.I):
+        sizes = ["Newborn", "0-3M", "3-6M", "6-9M", "9-12M"]
+    else:
+        sizes = ["2-3Y", "3-4Y", "4-5Y", "5-6Y"]
+
+    options = [{"name": "Size / Age", "values": sizes}]
+    colors = [c for c in KNOWN_COLORS if re.search(rf"\b{re.escape(c)}\b", body, re.I)]
+    # Gray and Grey are spelling variants, not separate customer choices.
+    if "Gray" in colors and "Grey" in colors:
+        colors.remove("Gray")
+    if len(colors) > 1:
+        options.append({"name": "Color", "values": colors})
+    return options
 
 # ───────────────────────── stages ─────────────────────────
 
@@ -202,7 +237,7 @@ def stage_normalize(csv_path, category):
     seen_names = {r["nm"] for r in payload if r.get("nm")}
 
     out, seen_img = [], set()
-    skipped_price = skipped_dup = skipped_missing_variants = 0
+    skipped_price = skipped_dup = 0
     for r in rows:
         p = (r.get(col["price"]) or "").strip()
         if not re.search(r"[0-9]", p) or p.upper() in ("N/A", "NA", "NONE", "-"):
@@ -219,8 +254,7 @@ def stage_normalize(csv_path, category):
         variant_options = variant_options_from(r, col)
         full = fixcaps(dedash((r.get(col["title"]) or "").strip()))
         if requires_variant_options(name, category, full) and not variant_options:
-            skipped_missing_variants += 1
-            continue
+            variant_options = inferred_apparel_options(full)
         out.append({
             "name": name,
             "full": full,
@@ -232,8 +266,6 @@ def stage_normalize(csv_path, category):
         })
     json.dump(out, open(QUEUE, "w"))
     print(f"normalize: {len(out)} new products | skipped {skipped_price} no-price, {skipped_dup} duplicates")
-    if skipped_missing_variants:
-        print(f"  skipped {skipped_missing_variants} apparel products with no size/color variants")
     print(f"  -> {QUEUE}  (review images before create; see README montage command)")
 
 
