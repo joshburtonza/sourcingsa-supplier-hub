@@ -3,6 +3,13 @@ import { Link } from "@tanstack/react-router";
 import { X, Minus, Plus, CheckCircle2, Truck, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { fmtZAR, SA_PROVINCES } from "@/lib/orders";
+import {
+  getVariantOptions,
+  initialVariantSelection,
+  isCompleteSelection,
+  variantSelectionLabel,
+  type VariantSelection,
+} from "@/lib/product-variants";
 import type { Product } from "./ProductCard";
 
 /**
@@ -20,6 +27,8 @@ export function OrderModal({
   onClose: () => void;
 }) {
   const [qty, setQty] = useState(1);
+  const variantOptions = getVariantOptions(product);
+  const [selectedOptions, setSelectedOptions] = useState<VariantSelection>(() => initialVariantSelection(variantOptions));
   const [form, setForm] = useState({
     customer_name: "",
     customer_phone: "",
@@ -47,6 +56,8 @@ export function OrderModal({
   }, [onClose]);
 
   const total = Number(product.cost_price) * qty;
+  const completeSelection = isCompleteSelection(variantOptions, selectedOptions);
+  const selectionLabel = variantSelectionLabel(selectedOptions);
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -55,6 +66,10 @@ export function OrderModal({
     setErr(null);
     if (!form.customer_name.trim() || !form.shipping_address.trim() || !form.shipping_city.trim()) {
       setErr("Customer name, address and city are required.");
+      return;
+    }
+    if (!completeSelection) {
+      setErr("Choose the product option before placing the order.");
       return;
     }
     setBusy(true);
@@ -70,6 +85,7 @@ export function OrderModal({
         p_shipping_province: form.shipping_province,
         p_shipping_postal_code: form.shipping_postal_code,
         p_notes: form.notes,
+        p_variant_selection: selectedOptions,
       });
       if (error) {
         setErr(error.message || "Could not place the order. Try again.");
@@ -161,6 +177,25 @@ export function OrderModal({
                 </div>
               </div>
 
+              {variantOptions.length > 0 && (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {variantOptions.map((option) => (
+                    <Field key={option.name} label={`${option.name} *`}>
+                      <select
+                        className="input focus-glow"
+                        value={selectedOptions[option.name] ?? ""}
+                        onChange={(e) => setSelectedOptions((prev) => ({ ...prev, [option.name]: e.target.value }))}
+                        required
+                      >
+                        {option.values.map((value) => (
+                          <option key={value} value={value} className="bg-[color:var(--card)]">{value}</option>
+                        ))}
+                      </select>
+                    </Field>
+                  ))}
+                </div>
+              )}
+
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="Customer name *">
                   <input className="input focus-glow" value={form.customer_name} onChange={set("customer_name")} placeholder="Full name" required />
@@ -211,6 +246,7 @@ export function OrderModal({
               </button>
               <p className="text-center text-xs text-[color:var(--muted-foreground)]">
                 You pay the cost price, you keep whatever your customer paid you.
+                {selectionLabel ? <> Selected: <span className="text-[color:var(--primary)]">{selectionLabel}</span>.</> : null}
               </p>
             </form>
           </>

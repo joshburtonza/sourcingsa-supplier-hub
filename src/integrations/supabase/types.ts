@@ -40,6 +40,7 @@ export type Database = {
           tracking_number: string | null
           unit_cost: number
           updated_at: string
+          variant_selection: Json
         }
         Insert: {
           amount?: number
@@ -66,6 +67,7 @@ export type Database = {
           tracking_number?: string | null
           unit_cost?: number
           updated_at?: string
+          variant_selection?: Json
         }
         Update: {
           amount?: number
@@ -92,6 +94,7 @@ export type Database = {
           tracking_number?: string | null
           unit_cost?: number
           updated_at?: string
+          variant_selection?: Json
         }
         Relationships: [
           {
@@ -107,6 +110,7 @@ export type Database = {
         Row: {
           active: boolean
           category: string
+          checkout_url: string | null
           cost_price: number
           created_at: string
           description: string | null
@@ -117,14 +121,18 @@ export type Database = {
           sales_count: number
           sell_price: number
           shopify_url: string | null
+          source_id: string | null
           stock_status: string
           supplier_note: string | null
           trending: boolean
           updated_at: string
+          variant_map: Json
+          variant_options: Json
         }
         Insert: {
           active?: boolean
           category: string
+          checkout_url?: string | null
           cost_price: number
           created_at?: string
           description?: string | null
@@ -135,14 +143,18 @@ export type Database = {
           sales_count?: number
           sell_price: number
           shopify_url?: string | null
+          source_id?: string | null
           stock_status?: string
           supplier_note?: string | null
           trending?: boolean
           updated_at?: string
+          variant_map?: Json
+          variant_options?: Json
         }
         Update: {
           active?: boolean
           category?: string
+          checkout_url?: string | null
           cost_price?: number
           created_at?: string
           description?: string | null
@@ -153,10 +165,13 @@ export type Database = {
           sales_count?: number
           sell_price?: number
           shopify_url?: string | null
+          source_id?: string | null
           stock_status?: string
           supplier_note?: string | null
           trending?: boolean
           updated_at?: string
+          variant_map?: Json
+          variant_options?: Json
         }
         Relationships: []
       }
@@ -325,6 +340,7 @@ export type Database = {
           p_shipping_province: string
           p_shipping_postal_code: string
           p_notes: string
+          p_variant_selection?: Json
         }
         Returns: string
       }

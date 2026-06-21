@@ -22,8 +22,8 @@ Runs: **normalize → create (Shopify) → enrich (CDN images) → load (Supabas
 
 ## What it does
 
-1. **normalize** — auto-detects the CSV columns (handles both the `title/price/image_url` and `Product Title/Price (ZAR)/Image URL` shapes), drops rows with no price (`N/A`), and **dedupes** within the file and against the live DB (by Temu `product_id` and by product name) so re-scrapes never double-list.
-2. **create** — lists each product in Shopify (active, ZAR), captures the variant id for the cart link. ~2/s (Shopify rate limit), so ~500 products ≈ 25 min.
+1. **normalize** — auto-detects the CSV columns (handles both the `title/price/image_url` and `Product Title/Price (ZAR)/Image URL` shapes), drops rows with no price (`N/A`), and **dedupes** within the file and against the live DB (by Temu `product_id` and by product name) so re-scrapes never double-list. Apparel is rejected when the detail scrape did not capture size/colour choices, preventing incomplete clothing listings.
+2. **create** — lists each product in Shopify (active, ZAR), creates variants from detected colour/size columns where present, and captures the variant/cart links. ~2/s (Shopify rate limit), so ~500 products ≈ 25 min.
 3. **enrich** — swaps the Temu image for the Shopify-hosted CDN copy (no hotlink risk).
 4. **load** — inserts into `public.products`, which is what the site shows.
 
@@ -35,7 +35,7 @@ Runs: **normalize → create (Shopify) → enrich (CDN images) → load (Supabas
 
 ## products table (columns the pipeline writes)
 
-`name, category, cost_price, sell_price, image_url, description, shopify_url, checkout_url, source_id, stock_status='in_stock', active=true`
+`name, category, cost_price, sell_price, image_url, description, shopify_url, checkout_url, source_id, variant_options, variant_map, stock_status='in_stock', active=true`
 
 The site's category dropdown is driven by the `hub_categories()` RPC (distinct active categories), and browse filters **server-side** with pagination — so any number of categories/products works.
 

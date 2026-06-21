@@ -13,7 +13,7 @@ import { callAos, extractJson, AosError } from "@/lib/aos.server";
  *
  * Body: { tier?: "starter"|"growth"|"elite"|... }
  * Returns: { ok, niche, products:[{ id, name, image_url, cost_price, sell_price,
- *            checkout_url, hub_url }], count, tier }
+ *            checkout_url, variant_options, variant_map, hub_url }], count, tier }
  */
 
 const HUB_ORIGIN = "https://zasupplierhub.josh-338.workers.dev";
@@ -78,7 +78,7 @@ export const Route = createFileRoute("/api/catalog/recommend")({
 
         const { data: prods } = await admin
           .from("products")
-          .select("id,name,category,cost_price,sell_price,image_url,checkout_url")
+          .select("id,name,category,cost_price,sell_price,image_url,checkout_url,variant_options,variant_map")
           .eq("active", true)
           .eq("category", parsed.niche.category)
           .order("sales_count", { ascending: false })
@@ -91,6 +91,8 @@ export const Route = createFileRoute("/api/catalog/recommend")({
           cost_price: p.cost_price,
           sell_price: p.sell_price,
           checkout_url: p.checkout_url,
+          variant_options: p.variant_options,
+          variant_map: p.variant_map,
           hub_url: `${HUB_ORIGIN}/product/${p.id}`,
         }));
 

@@ -38,6 +38,7 @@ import { Route as AdminMembersRouteImport } from './routes/admin.members'
 import { Route as ApiToolsRecommendNicheRouteImport } from './routes/api.tools.recommend-niche'
 import { Route as ApiToolsNicheFinderRouteImport } from './routes/api.tools.niche-finder'
 import { Route as ApiToolsAiToolRouteImport } from './routes/api.tools.ai-tool'
+import { Route as ApiProductsSearchRouteImport } from './routes/api.products.search'
 import { Route as ApiDropstoreLinkRouteImport } from './routes/api.dropstore.link'
 import { Route as ApiCatalogRecommendRouteImport } from './routes/api.catalog.recommend'
 import { Route as ApiWebhooksShopifyOrdersPaidRouteImport } from './routes/api.webhooks.shopify.orders-paid'
@@ -187,6 +188,11 @@ const ApiToolsAiToolRoute = ApiToolsAiToolRouteImport.update({
   path: '/api/tools/ai-tool',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiProductsSearchRoute = ApiProductsSearchRouteImport.update({
+  id: '/api/products/search',
+  path: '/api/products/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDropstoreLinkRoute = ApiDropstoreLinkRouteImport.update({
   id: '/api/dropstore/link',
   path: '/api/dropstore/link',
@@ -233,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/tools/': typeof ToolsIndexRoute
   '/api/catalog/recommend': typeof ApiCatalogRecommendRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
+  '/api/products/search': typeof ApiProductsSearchRoute
   '/api/tools/ai-tool': typeof ApiToolsAiToolRoute
   '/api/tools/niche-finder': typeof ApiToolsNicheFinderRoute
   '/api/tools/recommend-niche': typeof ApiToolsRecommendNicheRoute
@@ -267,6 +274,7 @@ export interface FileRoutesByTo {
   '/tools': typeof ToolsIndexRoute
   '/api/catalog/recommend': typeof ApiCatalogRecommendRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
+  '/api/products/search': typeof ApiProductsSearchRoute
   '/api/tools/ai-tool': typeof ApiToolsAiToolRoute
   '/api/tools/niche-finder': typeof ApiToolsNicheFinderRoute
   '/api/tools/recommend-niche': typeof ApiToolsRecommendNicheRoute
@@ -302,6 +310,7 @@ export interface FileRoutesById {
   '/tools/': typeof ToolsIndexRoute
   '/api/catalog/recommend': typeof ApiCatalogRecommendRoute
   '/api/dropstore/link': typeof ApiDropstoreLinkRoute
+  '/api/products/search': typeof ApiProductsSearchRoute
   '/api/tools/ai-tool': typeof ApiToolsAiToolRoute
   '/api/tools/niche-finder': typeof ApiToolsNicheFinderRoute
   '/api/tools/recommend-niche': typeof ApiToolsRecommendNicheRoute
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/tools/'
     | '/api/catalog/recommend'
     | '/api/dropstore/link'
+    | '/api/products/search'
     | '/api/tools/ai-tool'
     | '/api/tools/niche-finder'
     | '/api/tools/recommend-niche'
@@ -372,6 +382,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/api/catalog/recommend'
     | '/api/dropstore/link'
+    | '/api/products/search'
     | '/api/tools/ai-tool'
     | '/api/tools/niche-finder'
     | '/api/tools/recommend-niche'
@@ -406,6 +417,7 @@ export interface FileRouteTypes {
     | '/tools/'
     | '/api/catalog/recommend'
     | '/api/dropstore/link'
+    | '/api/products/search'
     | '/api/tools/ai-tool'
     | '/api/tools/niche-finder'
     | '/api/tools/recommend-niche'
@@ -436,6 +448,7 @@ export interface RootRouteChildren {
   ToolsIndexRoute: typeof ToolsIndexRoute
   ApiCatalogRecommendRoute: typeof ApiCatalogRecommendRoute
   ApiDropstoreLinkRoute: typeof ApiDropstoreLinkRoute
+  ApiProductsSearchRoute: typeof ApiProductsSearchRoute
   ApiToolsAiToolRoute: typeof ApiToolsAiToolRoute
   ApiToolsNicheFinderRoute: typeof ApiToolsNicheFinderRoute
   ApiToolsRecommendNicheRoute: typeof ApiToolsRecommendNicheRoute
@@ -647,6 +660,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiToolsAiToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/products/search': {
+      id: '/api/products/search'
+      path: '/api/products/search'
+      fullPath: '/api/products/search'
+      preLoaderRoute: typeof ApiProductsSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/dropstore/link': {
       id: '/api/dropstore/link'
       path: '/api/dropstore/link'
@@ -713,6 +733,7 @@ const rootRouteChildren: RootRouteChildren = {
   ToolsIndexRoute: ToolsIndexRoute,
   ApiCatalogRecommendRoute: ApiCatalogRecommendRoute,
   ApiDropstoreLinkRoute: ApiDropstoreLinkRoute,
+  ApiProductsSearchRoute: ApiProductsSearchRoute,
   ApiToolsAiToolRoute: ApiToolsAiToolRoute,
   ApiToolsNicheFinderRoute: ApiToolsNicheFinderRoute,
   ApiToolsRecommendNicheRoute: ApiToolsRecommendNicheRoute,

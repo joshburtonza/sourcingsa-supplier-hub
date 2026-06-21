@@ -100,6 +100,7 @@ type ShopifyLineItem = {
   price?: string | number;
   variant_id?: number | string;
   product_id?: number | string;
+  variant_title?: string | null;
 };
 type ShopifyOrder = {
   id?: number | string;
@@ -143,6 +144,37 @@ function parseAmount(v: string | number | undefined): number | null {
   if (v == null) return null;
   const n = typeof v === "number" ? v : Number.parseFloat(v);
   return Number.isFinite(n) ? n : null;
+}
+
+function parseSelectionLabel(raw: string | null | undefined): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const part of String(raw ?? "").split(/\s*\/\s*/)) {
+    const m = part.match(/^\s*([^:]+):\s*(.+?)\s*$/);
+    if (m?.[1] && m?.[2]) out[m[1].trim()] = m[2].trim();
+  }
+  return out;
+}
+
+function selectionFromOrderNote(order: ShopifyOrder, item: ShopifyLineItem): Record<string, string> {
+  const note = order.note ?? "";
+  const title = item.title ?? "";
+  const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const itemMatch = note.match(new RegExp(`${escaped}\\s*\\(([^)]*:[^)]*)\\)`, "i"));
+  if (itemMatch?.[1]) return parseSelectionLabel(itemMatch[1]);
+
+  if ((order.line_items ?? []).length === 1) {
+    const direct = note
+      .split("|")
+      .map((p) => p.trim())
+      .find((p) => /[^:]+:\s*[^:]+/.test(p) && !/^ZASH:/i.test(p) && !/^Selections:/i.test(p));
+    const parsed = parseSelectionLabel(direct);
+    if (Object.keys(parsed).length) return parsed;
+  }
+
+  if (item.variant_title && !/^default title$/i.test(item.variant_title)) {
+    return { Option: item.variant_title };
+  }
+  return {};
 }
 
 /**
@@ -211,6 +243,7 @@ async function recordHubOrders(order: ShopifyOrder, hubEmail: string): Promise<v
       amount: unit * qty,
       status,
       paid: true,
+      variant_selection: selectionFromOrderNote(order, li),
       customer_name: customerName,
       customer_email: (order.email ?? "").toLowerCase() || null,
       shipping_address: sa.address1 ?? null,
@@ -218,6 +251,7 @@ async function recordHubOrders(order: ShopifyOrder, hubEmail: string): Promise<v
       shipping_province: sa.province ?? null,
       shipping_postal_code: sa.zip ?? null,
       shopify_order_id: orderId,
+      notes: order.note ?? null,
       ordered_at: order.created_at ?? undefined,
     };
   });

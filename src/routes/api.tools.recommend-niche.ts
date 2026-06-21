@@ -93,7 +93,7 @@ export const Route = createFileRoute("/api/tools/recommend-niche")({
         // N products from the niche category, best sellers first
         const { data: prods } = await admin
           .from("products")
-          .select("id,name,category,cost_price,sell_price,image_url,images,shopify_url,checkout_url,description,stock_status,sales_count,trending")
+          .select("id,name,category,cost_price,sell_price,image_url,images,shopify_url,checkout_url,variant_options,variant_map,description,stock_status,sales_count,trending")
           .eq("active", true)
           .eq("category", parsed.niche.category)
           .order("sales_count", { ascending: false })

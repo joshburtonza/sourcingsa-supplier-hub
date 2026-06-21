@@ -23,7 +23,7 @@ Credentials (never hard-coded):
     ../../.env            SHOPIFY_CLIENT_ID, SHOPIFY_CLIENT_SECRET, SHOPIFY_STORE
     macOS keychain        Supabase management-API token  ->  service: "Supabase CLI"
 """
-import argparse, csv, json, os, re, subprocess, time, urllib.request, urllib.error, base64
+import argparse, csv, itertools, json, os, re, subprocess, time, urllib.request, urllib.error, base64
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))      # hub repo root (has .env)
@@ -140,6 +140,51 @@ def detect(keys):
         "colors": pick("color_variants", "colors/variants"),
     }
 
+
+def split_variant_values(raw):
+    raw = dedash(raw or "").strip()
+    if not raw or raw.upper() in ("N/A", "NA", "NONE", "-"):
+        return []
+    parts = re.split(r"\s*(?:,|;|\|)\s*", raw.replace(" and ", ", "))
+    out = []
+    for p in parts:
+        p = p.strip().strip(".")
+        if p and p.upper() not in ("N/A", "NA", "NONE", "-") and p not in out:
+            out.append(p)
+    return out
+
+
+def variant_options_from(row, col):
+    options = []
+    colors = split_variant_values(row.get(col["colors"]) if col["colors"] else "")
+    sizes = split_variant_values(row.get(col["sizes"]) if col["sizes"] else "")
+    if colors and len(colors) > 1:
+        options.append({"name": "Color", "values": colors[:40]})
+    if sizes and len(sizes) > 1:
+        options.append({"name": "Size / Age", "values": sizes[:40]})
+    return options[:3]
+
+
+def variant_display(options):
+    chunks = []
+    for opt in options or []:
+        values = opt.get("values") or []
+        if values:
+            chunks.append(f"{opt.get('name', 'Option')}: {', '.join(values)}")
+    return "; ".join(chunks)
+
+
+APPAREL_RE = re.compile(
+    r"\b(romper|bodysuit|jumpsuit|onesie|outfit|clothing|clothes|sweater|"
+    r"pants set|dress|shirt|jacket|vest|tracksuit|overalls)\b",
+    re.I,
+)
+
+
+def requires_variant_options(name, category, full):
+    """Sized apparel must not publish when the detail scrape missed choices."""
+    return bool(APPAREL_RE.search(f"{name} {category} {full}"))
+
 # ───────────────────────── stages ─────────────────────────
 
 def stage_normalize(csv_path, category):
@@ -157,7 +202,7 @@ def stage_normalize(csv_path, category):
     seen_names = {r["nm"] for r in payload if r.get("nm")}
 
     out, seen_img = [], set()
-    skipped_price = skipped_dup = 0
+    skipped_price = skipped_dup = skipped_missing_variants = 0
     for r in rows:
         p = (r.get(col["price"]) or "").strip()
         if not re.search(r"[0-9]", p) or p.upper() in ("N/A", "NA", "NONE", "-"):
@@ -171,21 +216,24 @@ def stage_normalize(csv_path, category):
         if pid:
             seen_ids.add(pid)
         seen_names.add(name.lower())
-        variants = ", ".join(v for v in [
-            (r.get(col["sizes"]) or "").strip() if col["sizes"] else "",
-            (r.get(col["colors"]) or "").strip() if col["colors"] else "",
-        ] if v and v.upper() != "N/A")
+        variant_options = variant_options_from(r, col)
+        full = fixcaps(dedash((r.get(col["title"]) or "").strip()))
+        if requires_variant_options(name, category, full) and not variant_options:
+            skipped_missing_variants += 1
+            continue
         out.append({
             "name": name,
-            "full": fixcaps(dedash((r.get(col["title"]) or "").strip())),
+            "full": full,
             "temu_cost": num(p), "image_url": img,
             "product_url": (r.get(col["url"]) or "").strip() if col["url"] else "",
-            "variants": variants, "category": category,
+            "variants": variant_display(variant_options), "variant_options": variant_options, "category": category,
             "source_id": pid,
             "source_query": (r.get(col["query"]) or "").strip() if col["query"] else category,
         })
     json.dump(out, open(QUEUE, "w"))
     print(f"normalize: {len(out)} new products | skipped {skipped_price} no-price, {skipped_dup} duplicates")
+    if skipped_missing_variants:
+        print(f"  skipped {skipped_missing_variants} apparel products with no size/color variants")
     print(f"  -> {QUEUE}  (review images before create; see README montage command)")
 
 
@@ -214,17 +262,44 @@ def stage_create():
         if k in ckpt:
             continue
         cost, _ = price_pair(r["temu_cost"])
-        desc = r["full"] + (f" Options: {r['variants']}." if r["variants"] else "")
+        options = r.get("variant_options") or []
+        option_names = [o["name"] for o in options]
+        combos = [dict(zip(option_names, vals)) for vals in itertools.product(*[o["values"] for o in options])] if options else [{}]
+        if len(combos) > 100:
+            print(f"  warning: {r['name'][:40]} has {len(combos)} combinations; capped to Shopify's first 100")
+            combos = combos[:100]
+        desc = r["full"] + (f" Options: {variant_display(options)}." if options else "")
+        variants = []
+        for combo in combos:
+            variant = {"price": f"{cost:.2f}", "inventory_management": None,
+                       "inventory_policy": "continue", "requires_shipping": True}
+            for pos, opt in enumerate(options, start=1):
+                variant[f"option{pos}"] = combo.get(opt["name"])
+            variants.append(variant)
         payload = {"product": {
             "title": r["name"], "body_html": f"<p>{desc}</p>", "product_type": r["category"],
             "tags": ["supplier-hub", r["category"]], "status": "active",
             "images": [{"src": r["image_url"]}],
-            "variants": [{"price": f"{cost:.2f}", "inventory_management": None,
-                          "inventory_policy": "continue", "requires_shipping": True}],
+            "variants": variants,
         }}
+        if options:
+            payload["product"]["options"] = [{"name": o["name"], "values": o["values"]} for o in options]
         p = _req("POST", "/products.json", payload, tok)["product"]
+        variant_map = []
+        for v in p.get("variants", []):
+            selected = {}
+            for pos, opt in enumerate(options, start=1):
+                val = v.get(f"option{pos}")
+                if val:
+                    selected[opt["name"]] = val
+            if selected:
+                variant_map.append({
+                    "variant_id": str(v["id"]),
+                    "checkout_url": f"https://{STORE}/cart/{v['id']}:1",
+                    "options": selected,
+                })
         ckpt[k] = {"id": p["id"], "handle": p["handle"], "variant_id": p["variants"][0]["id"],
-                   "url": f"https://{STORE}/products/{p['handle']}"}
+                   "url": f"https://{STORE}/products/{p['handle']}", "variant_map": variant_map}
         json.dump(ckpt, open(CKPT, "w"))
         made += 1
         if made % 25 == 0:
@@ -266,16 +341,19 @@ def stage_load():
             continue
         c = ckpt[k]
         cost, sell = price_pair(r["temu_cost"])
-        desc = esc(r["full"] + (f" Options: {r['variants']}." if r["variants"] else ""))
+        options = r.get("variant_options") or []
+        desc = esc(r["full"] + (f" Options: {variant_display(options)}." if options else ""))
         img = esc(dedash((c.get("image") or r["image_url"]).strip()))
         checkout = f"https://{STORE}/cart/{c['variant_id']}:1"
-        vals.append("('%s','%s',%.2f,%.2f,'%s','%s','%s','%s','%s','in_stock',true)" % (
+        variant_options = esc(json.dumps(options))
+        variant_map = esc(json.dumps(c.get("variant_map") or []))
+        vals.append("('%s','%s',%.2f,%.2f,'%s','%s','%s','%s','%s','%s'::jsonb,'%s'::jsonb,'in_stock',true)" % (
             esc(r["name"]), esc(r["category"]), cost, sell, img, desc,
-            esc(c["url"]), checkout, esc(r.get("source_id") or "")))
+            esc(c["url"]), checkout, esc(r.get("source_id") or ""), variant_options, variant_map))
     if not vals:
         print("load: nothing to insert"); return
     sql = ("insert into public.products (name,category,cost_price,sell_price,image_url,"
-           "description,shopify_url,checkout_url,source_id,stock_status,active) values\n"
+           "description,shopify_url,checkout_url,source_id,variant_options,variant_map,stock_status,active) values\n"
            + ",\n".join(vals) + ";")
     mgmt_query(sql)
     print(f"load: inserted {len(vals)} products into the hub")

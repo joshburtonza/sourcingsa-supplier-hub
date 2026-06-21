@@ -5,6 +5,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProtectedShell } from "@/components/ProtectedShell";
 import { useCart } from "@/lib/cart";
 import { fmtZAR, STOCK_META } from "@/lib/orders";
+import {
+  checkoutUrlFor,
+  getVariantOptions,
+  initialVariantSelection,
+  isCompleteSelection,
+  variantSelectionLabel,
+  type VariantSelection,
+} from "@/lib/product-variants";
 import type { Product } from "@/components/ProductCard";
 
 export const Route = createFileRoute("/product/$id")({
@@ -16,13 +24,14 @@ export const Route = createFileRoute("/product/$id")({
 });
 
 const COLS =
-  "id,name,category,cost_price,sell_price,image_url,images,shopify_url,checkout_url,description,stock_status,sales_count,trending";
+  "id,name,category,cost_price,sell_price,image_url,images,shopify_url,checkout_url,variant_options,variant_map,description,stock_status,sales_count,trending";
 
 function ProductDetail() {
   const { id } = Route.useParams();
   const cart = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [qty, setQty] = useState(1);
+  const [selectedOptions, setSelectedOptions] = useState<VariantSelection>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -32,7 +41,9 @@ function ProductDetail() {
       const { data, error } = await supabase.from("products").select(COLS).eq("id", id).maybeSingle();
       if (error) console.error("[product] load failed", error.message);
       if (!cancelled) {
-        setProduct((data as Product) ?? null);
+        const next = (data as Product) ?? null;
+        setProduct(next);
+        setSelectedOptions(initialVariantSelection(getVariantOptions(next)));
         setLoading(false);
       }
     })();
@@ -69,9 +80,10 @@ function ProductDetail() {
   const stock = product.stock_status ?? "in_stock";
   const outOfStock = stock === "out_of_stock";
   const stockMeta = STOCK_META[stock];
-  const buyHref = product.checkout_url ?? product.shopify_url ?? null;
-  const note = cart?.email ? `?note=${encodeURIComponent(`ZASH:${cart.email}`)}` : "";
-  const buyNow = buyHref ? buyHref.replace(/:1$/, `:${qty}`) + note : null;
+  const variantOptions = getVariantOptions(product);
+  const completeSelection = isCompleteSelection(variantOptions, selectedOptions);
+  const selectionLabel = variantSelectionLabel(selectedOptions);
+  const buyNow = completeSelection ? checkoutUrlFor(product, qty, selectedOptions, cart?.email) : null;
 
   return (
     <div className="space-y-6">
@@ -121,6 +133,29 @@ function ProductDetail() {
             <p className="mt-5 text-sm leading-relaxed text-[color:var(--muted-foreground)]">{product.description}</p>
           )}
 
+          {variantOptions.length > 0 && (
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {variantOptions.map((option) => (
+                <label key={option.name} className="block">
+                  <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-[color:var(--muted-foreground)]">
+                    {option.name}
+                  </span>
+                  <select
+                    className="input focus-glow"
+                    value={selectedOptions[option.name] ?? ""}
+                    onChange={(e) => setSelectedOptions((prev) => ({ ...prev, [option.name]: e.target.value }))}
+                  >
+                    {option.values.map((value) => (
+                      <option key={value} value={value} className="bg-[color:var(--card)]">
+                        {value}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ))}
+            </div>
+          )}
+
           <ul className="mt-5 grid gap-2 text-sm text-white sm:grid-cols-2">
             <li className="flex items-center gap-2"><Check className="h-4 w-4 text-[color:var(--primary)]" strokeWidth={3} /> Ships nationwide in 2-5 days</li>
             <li className="flex items-center gap-2"><Check className="h-4 w-4 text-[color:var(--primary)]" strokeWidth={3} /> No stock to hold</li>
@@ -146,8 +181,9 @@ function ProductDetail() {
                 </div>
                 {cart && (
                   <button
-                    onClick={() => cart.add(product, qty)}
-                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn sm:flex-none"
+                    disabled={!completeSelection}
+                    onClick={() => cart.add(product, qty, selectedOptions)}
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none"
                   >
                     <Plus className="h-5 w-5" /> Add to cart
                   </button>
@@ -167,6 +203,7 @@ function ProductDetail() {
 
             <p className="text-xs text-[color:var(--muted-foreground)]">
               You pay {fmtZAR(cost * qty)} for {qty} {qty > 1 ? "units" : "unit"} at checkout. Resell each for {fmtZAR(sell)}.
+              {selectionLabel ? <> Selected: <span className="text-[color:var(--primary)]">{selectionLabel}</span>.</> : null}
             </p>
           </div>
         </div>

@@ -4,6 +4,7 @@ import { Plus, X, Loader2, Save, Trash2, Upload, Package } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/AdminShell";
 import { fmtZAR, PRODUCT_CATEGORIES } from "@/lib/orders";
+import { getVariantOptions, type ProductVariantOption } from "@/lib/product-variants";
 import type { Product } from "@/components/ProductCard";
 
 export const Route = createFileRoute("/admin/products")({
@@ -94,6 +95,30 @@ const STOCK_OPTIONS = [
   { value: "out_of_stock", label: "Out of stock" },
 ];
 
+function formatVariantEditor(options: ProductVariantOption[] | unknown): string {
+  return getVariantOptions({ variant_options: options })
+    .map((o) => `${o.name}: ${o.values.join(", ")}`)
+    .join("\n");
+}
+
+function parseVariantEditor(raw: string): ProductVariantOption[] {
+  return raw
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const [nameRaw, valuesRaw = ""] = line.includes(":") ? line.split(/:(.*)/s) : ["Option", line];
+      const name = nameRaw.trim() || "Option";
+      const values = valuesRaw
+        .split(/[,|;]/)
+        .map((v) => v.trim())
+        .filter(Boolean);
+      return values.length ? { name, values: [...new Set(values)] } : null;
+    })
+    .filter((o): o is ProductVariantOption => Boolean(o))
+    .slice(0, 3);
+}
+
 function ProductEditor({ product, onClose, onSaved, onDeleted }: { product: Product | null; onClose: () => void; onSaved: () => void; onDeleted: () => void }) {
   const [form, setForm] = useState({
     name: product?.name ?? "",
@@ -104,6 +129,7 @@ function ProductEditor({ product, onClose, onSaved, onDeleted }: { product: Prod
     supplier_note: (product as { supplier_note?: string | null })?.supplier_note ?? "",
     stock_status: product?.stock_status ?? "in_stock",
     image_url: product?.image_url ?? "",
+    variants: formatVariantEditor(product?.variant_options ?? []),
     active: product?.active ?? true,
     trending: product?.trending ?? false,
   });
@@ -154,6 +180,7 @@ function ProductEditor({ product, onClose, onSaved, onDeleted }: { product: Prod
       supplier_note: form.supplier_note.trim() || null,
       stock_status: form.stock_status,
       image_url: form.image_url.trim() || null,
+      variant_options: parseVariantEditor(form.variants),
       active: form.active,
       trending: form.trending,
     };
@@ -222,6 +249,14 @@ function ProductEditor({ product, onClose, onSaved, onDeleted }: { product: Prod
           )}
 
           <Field label="Description"><textarea className="input focus-glow min-h-[72px] resize-y" value={form.description} onChange={(e) => setField("description", e.target.value)} /></Field>
+          <Field label="Variants (optional)">
+            <textarea
+              className="input focus-glow min-h-[84px] resize-y"
+              value={form.variants}
+              onChange={(e) => setField("variants", e.target.value)}
+              placeholder={"Color: Cream, Sage Green, Blush Pink\nSize: S, M, L, XL"}
+            />
+          </Field>
           <Field label="Supplier note (internal)"><input className="input focus-glow" value={form.supplier_note} onChange={(e) => setField("supplier_note", e.target.value)} placeholder="Not shown to members" /></Field>
           <Field label="Stock">
             <select className="input focus-glow" value={form.stock_status} onChange={(e) => setField("stock_status", e.target.value)}>

@@ -4,6 +4,7 @@ import { Search, X, Loader2, Save } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminShell } from "@/components/AdminShell";
 import { fmtZAR, shortId, STATUS_META, ORDER_STATUSES, type OrderStatus } from "@/lib/orders";
+import { variantSelectionLabel, type VariantSelection } from "@/lib/product-variants";
 
 export const Route = createFileRoute("/admin/orders")({
   component: () => (
@@ -31,6 +32,7 @@ type Order = {
   tracking_number: string | null;
   courier: string | null;
   notes: string | null;
+  variant_selection?: VariantSelection | null;
   ordered_at: string;
 };
 
@@ -111,7 +113,12 @@ function AdminOrders() {
                     <tr key={o.id} onClick={() => setEditing(o)} className="cursor-pointer border-t border-[color:var(--border)] hover:bg-white/[0.03]">
                       <td className="px-5 py-3 font-mono text-xs text-[color:var(--muted-foreground)]">{shortId(o.id)}</td>
                       <td className="px-5 py-3 text-[color:var(--muted-foreground)]">{o.email}</td>
-                      <td className="px-5 py-3 text-white">{o.product_name}{o.quantity > 1 ? ` ×${o.quantity}` : ""}</td>
+                      <td className="px-5 py-3 text-white">
+                        {o.product_name}{o.quantity > 1 ? ` ×${o.quantity}` : ""}
+                        {variantSelectionLabel(o.variant_selection) && (
+                          <div className="mt-0.5 text-xs text-[color:var(--primary)]">{variantSelectionLabel(o.variant_selection)}</div>
+                        )}
+                      </td>
                       <td className="px-5 py-3 text-white">{fmtZAR(o.amount)}</td>
                       <td className="px-5 py-3">{o.paid ? <span className="text-emerald-300">Yes</span> : <span className="text-amber-300">No</span>}</td>
                       <td className="px-5 py-3"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${meta.cls}`}>{meta.label}</span></td>
@@ -163,6 +170,9 @@ function OrderEditor({ order, onClose, onSaved }: { order: Order; onClose: () =>
         <div className="font-mono text-xs text-[color:var(--muted-foreground)]">{shortId(order.id)}</div>
         <h2 className="mt-1 text-xl font-semibold text-white">{order.product_name}</h2>
         <p className="mt-1 text-sm text-[color:var(--muted-foreground)]">{order.email} · {fmtZAR(order.amount)}</p>
+        {variantSelectionLabel(order.variant_selection) && (
+          <p className="mt-2 text-sm font-medium text-[color:var(--primary)]">{variantSelectionLabel(order.variant_selection)}</p>
+        )}
 
         <div className="mt-6 space-y-4">
           <label className="block">

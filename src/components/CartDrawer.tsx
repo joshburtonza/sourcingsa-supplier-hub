@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { X, Minus, Plus, Trash2, ShoppingBag, ShoppingCart } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { fmtZAR } from "@/lib/orders";
+import { variantSelectionLabel } from "@/lib/product-variants";
 
 /** Slide-in cart. Lives in the member shell. */
 export function CartDrawer() {
@@ -50,6 +51,9 @@ export function CartDrawer() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="line-clamp-2 text-sm font-medium text-white">{i.name}</div>
+                      {variantSelectionLabel(i.selectedOptions) && (
+                        <div className="mt-0.5 text-xs text-[color:var(--primary)]">{variantSelectionLabel(i.selectedOptions)}</div>
+                      )}
                       <div className="mt-0.5 text-xs text-[color:var(--muted-foreground)]">{fmtZAR(i.cost_price)} each</div>
                       <div className="mt-2 flex items-center justify-between">
                         <div className="inline-flex items-center rounded-lg border border-[color:var(--border)]">

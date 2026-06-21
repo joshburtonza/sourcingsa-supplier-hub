@@ -45,7 +45,7 @@ type Order = {
 };
 
 const CARD_COLS =
-  "id,name,category,cost_price,sell_price,image_url,images,shopify_url,checkout_url,description,stock_status,sales_count,trending";
+  "id,name,category,cost_price,sell_price,image_url,images,shopify_url,checkout_url,variant_options,variant_map,description,stock_status,sales_count,trending";
 
 function Dashboard() {
   const { user } = useAuth();

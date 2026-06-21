@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  selectedVariantId,
+  variantLineKey,
+  variantSelectionLabel,
+  type ProductVariantMapEntry,
+  type ProductVariantOption,
+  type VariantSelection,
+} from "@/lib/product-variants";
 
 /**
  * Client-side cart. Members add products + quantities, then check out once on
@@ -12,12 +20,14 @@ const MAX_QTY = 999;
 
 export type CartItem = {
   id: string;
+  productId?: string;
   name: string;
   image: string | null;
   cost_price: number;
   sell_price: number;
   variantId: string;
   qty: number;
+  selectedOptions?: VariantSelection;
 };
 
 type AddInput = {
@@ -29,13 +39,15 @@ type AddInput = {
   sell_price: number | string;
   checkout_url?: string | null;
   shopify_url?: string | null;
+  variant_options?: ProductVariantOption[] | unknown;
+  variant_map?: ProductVariantMapEntry[] | unknown;
 };
 
 type CartCtx = {
   items: CartItem[];
   count: number;
   totalCost: number;
-  add: (p: AddInput, qty?: number) => boolean;
+  add: (p: AddInput, qty?: number, selectedOptions?: VariantSelection) => boolean;
   setQty: (id: string, qty: number) => void;
   remove: (id: string) => void;
   clear: () => void;
@@ -46,12 +58,6 @@ type CartCtx = {
 };
 
 const Ctx = createContext<CartCtx | null>(null);
-
-function variantFrom(p: AddInput): string | null {
-  const u = p.checkout_url ?? p.shopify_url ?? "";
-  const m = u.match(/\/cart\/(\d+):/);
-  return m ? m[1] : null;
-}
 
 export function CartProvider({ children, email = null }: { children: ReactNode; email?: string | null }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -79,27 +85,30 @@ export function CartProvider({ children, email = null }: { children: ReactNode; 
     }
   }, [items, hydrated]);
 
-  const add: CartCtx["add"] = (p, qty = 1) => {
-    const variantId = variantFrom(p);
+  const add: CartCtx["add"] = (p, qty = 1, selectedOptions = {}) => {
+    const variantId = selectedVariantId(p, selectedOptions);
     if (!variantId) return false;
     const add = Math.max(1, Math.min(qty, MAX_QTY));
+    const lineId = variantLineKey(p.id, selectedOptions);
     setItems((prev) => {
-      const existing = prev.find((i) => i.id === p.id);
+      const existing = prev.find((i) => i.id === lineId);
       if (existing) {
         return prev.map((i) =>
-          i.id === p.id ? { ...i, qty: Math.min(i.qty + add, MAX_QTY) } : i,
+          i.id === lineId ? { ...i, qty: Math.min(i.qty + add, MAX_QTY) } : i,
         );
       }
       return [
         ...prev,
         {
-          id: p.id,
+          id: lineId,
+          productId: p.id,
           name: p.name,
           image: p.image_url ?? p.images?.[0] ?? null,
           cost_price: Number(p.cost_price),
           sell_price: Number(p.sell_price),
           variantId,
           qty: add,
+          selectedOptions,
         },
       ];
     });
@@ -123,7 +132,16 @@ export function CartProvider({ children, email = null }: { children: ReactNode; 
     const base = STORE_BASE + items.map((i) => `${i.variantId}:${i.qty}`).join(",");
     // Carry the member's hub email so the orders/paid webhook can attribute the
     // order to their hub login even if they use a different email at checkout.
-    return email ? `${base}?note=${encodeURIComponent(`ZASH:${email}`)}` : base;
+    const selections = items
+      .map((i) => {
+        const label = variantSelectionLabel(i.selectedOptions);
+        return label ? `${i.name} (${label}) x${i.qty}` : "";
+      })
+      .filter(Boolean);
+    const note = [email ? `ZASH:${email}` : "", selections.length ? `Selections: ${selections.join("; ")}` : ""]
+      .filter(Boolean)
+      .join(" | ");
+    return note ? `${base}?note=${encodeURIComponent(note)}` : base;
   };
 
   const value = useMemo<CartCtx>(

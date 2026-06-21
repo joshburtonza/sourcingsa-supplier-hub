@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Package, ShoppingBag, Plus } from "lucide-react";
 import { fmtZAR, STOCK_META } from "@/lib/orders";
 import { useCart } from "@/lib/cart";
+import { getVariantOptions, type ProductVariantMapEntry, type ProductVariantOption } from "@/lib/product-variants";
 import { OrderModal } from "./OrderModal";
 
 // Re-exported for the screens that already import it from here.
@@ -18,6 +19,8 @@ export type Product = {
   images?: string[] | null;
   shopify_url?: string | null;
   checkout_url?: string | null;
+  variant_options?: ProductVariantOption[] | null;
+  variant_map?: ProductVariantMapEntry[] | null;
   description?: string | null;
   stock_status?: string | null;
   active?: boolean | null;
@@ -57,6 +60,8 @@ export function ProductCard({ product, rank }: { product: Product; rank?: number
   const stock = product.stock_status ?? "in_stock";
   const outOfStock = stock === "out_of_stock";
   const stockMeta = STOCK_META[stock];
+  const variantOptions = getVariantOptions(product);
+  const needsSelection = variantOptions.length > 0;
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] glow-card-hover">
@@ -116,6 +121,11 @@ export function ProductCard({ product, rank }: { product: Product; rank?: number
           <span className="inline-flex items-center rounded-md bg-[color:var(--success)]/15 px-2 py-1 text-xs font-semibold text-[color:var(--success)]">
             {fmtZAR(profit)} profit · {margin}%
           </span>
+          {needsSelection && (
+            <span className="text-xs text-[color:var(--primary)]">
+              {variantOptions.map((o) => o.name).join(" / ")}
+            </span>
+          )}
           {stockMeta && stock !== "in_stock" && (
             <span className={`text-xs font-medium ${stockMeta.cls}`}>{stockMeta.label}</span>
           )}
@@ -125,15 +135,14 @@ export function ProductCard({ product, rank }: { product: Product; rank?: number
         </div>
 
         {cart ? (
-          <button
-            type="button"
-            disabled={outOfStock}
-            onClick={() => cart.add(product, 1)}
-            className="mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn disabled:cursor-not-allowed disabled:opacity-50"
+          <Link
+            to="/product/$id"
+            params={{ id: product.id }}
+            className={`mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-[color:var(--primary)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[color:var(--primary-hover)] glow-btn ${outOfStock ? "pointer-events-none opacity-50" : ""}`}
           >
-            <Plus className="h-4 w-4" />
-            {outOfStock ? "Out of stock" : "Add to cart"}
-          </button>
+            <ShoppingBag className="h-4 w-4" />
+            {outOfStock ? "Out of stock" : needsSelection ? "Choose options" : "Choose quantity"}
+          </Link>
         ) : product.checkout_url || product.shopify_url ? (
           <a
             href={product.checkout_url ?? product.shopify_url ?? undefined}

@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProtectedShell } from "@/components/ProtectedShell";
 import { useAuth } from "@/hooks/use-auth";
 import { fmtZAR, shortId, STATUS_META, type OrderStatus } from "@/lib/orders";
+import { variantSelectionLabel, type VariantSelection } from "@/lib/product-variants";
 
 export const Route = createFileRoute("/orders")({
   component: () => (
@@ -40,6 +41,7 @@ type Order = {
   tracking_number: string | null;
   courier: string | null;
   notes: string | null;
+  variant_selection?: VariantSelection | null;
   ordered_at: string;
 };
 
@@ -166,7 +168,12 @@ function OrdersPage() {
                   return (
                     <tr key={o.id} onClick={() => setActive(o)} className="cursor-pointer border-t border-[color:var(--border)] transition-colors hover:bg-white/[0.03]">
                       <td className="px-6 py-3 font-mono text-xs text-[color:var(--muted-foreground)]">{shortId(o.id)}</td>
-                      <td className="px-6 py-3 text-white">{o.product_name}{o.quantity > 1 ? <span className="text-[color:var(--muted-foreground)]"> ×{o.quantity}</span> : null}</td>
+                      <td className="px-6 py-3 text-white">
+                        {o.product_name}{o.quantity > 1 ? <span className="text-[color:var(--muted-foreground)]"> ×{o.quantity}</span> : null}
+                        {variantSelectionLabel(o.variant_selection) && (
+                          <div className="mt-0.5 text-xs text-[color:var(--primary)]">{variantSelectionLabel(o.variant_selection)}</div>
+                        )}
+                      </td>
                       <td className="px-6 py-3 text-[color:var(--muted-foreground)]">{o.customer_name ?? "-"}</td>
                       <td className="px-6 py-3 text-[color:var(--muted-foreground)]">{new Date(o.ordered_at).toLocaleDateString("en-ZA")}</td>
                       <td className="px-6 py-3 text-white">{fmtZAR(Number(o.amount))}</td>
@@ -201,6 +208,9 @@ function OrderDetail({ order, onClose }: { order: Order; onClose: () => void }) 
         <button onClick={onClose} className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-lg text-[color:var(--muted-foreground)] hover:bg-white/5 hover:text-white" aria-label="Close"><X className="h-5 w-5" /></button>
         <div className="font-mono text-xs text-[color:var(--muted-foreground)]">{shortId(order.id)}</div>
         <h2 className="mt-1 text-xl font-semibold text-white">{order.product_name}</h2>
+        {variantSelectionLabel(order.variant_selection) && (
+          <p className="mt-2 text-sm font-medium text-[color:var(--primary)]">{variantSelectionLabel(order.variant_selection)}</p>
+        )}
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${meta.cls}`}>{meta.label}</span>
           {!order.paid && order.status !== "cancelled" && <span className="rounded-full bg-amber-500/10 px-2 py-1 text-[10px] font-semibold text-amber-300">Awaiting payment</span>}
