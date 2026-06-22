@@ -225,7 +225,11 @@ export function ProductBrowser({
         <>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((p, i) => (
-              <ProductCard key={p.id} product={p} rank={rankItems ? i + 1 : undefined} />
+              <ProductCard
+                key={p.id}
+                product={p}
+                rank={rankItems && !debouncedSearch.trim() ? i + 1 : undefined}
+              />
             ))}
           </div>
           {hasMore && (

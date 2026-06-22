@@ -102,7 +102,11 @@ export const Route = createFileRoute("/api/products/search")({
         const terms = searchTerms(String(body.search ?? ""));
 
         let query = admin.from("products").select(CARD_COLS).eq("active", true);
-        if (body.trendingOnly) query = query.eq("trending", true);
+        // The Trending page is a ranked feed until the member types a search.
+        // A typed search is catalogue-wide; otherwise common terms such as
+        // "baby" or "mom" incorrectly return empty when that niche has not yet
+        // been flagged as trending.
+        if (body.trendingOnly && terms.length === 0) query = query.eq("trending", true);
         if (category && category !== "All") query = query.eq("category", category);
         if (terms.length) {
           const clauses = terms
@@ -130,7 +134,7 @@ export const Route = createFileRoute("/api/products/search")({
         // user id prefix only, never email.
         console.log(
           `[products-search] ok user=${userId.slice(0, 8)} cat=${JSON.stringify(category)} ` +
-            `price=${Number(body.priceIdx ?? 0)} trending=${Boolean(body.trendingOnly)} page=${page} ` +
+            `price=${Number(body.priceIdx ?? 0)} trending=${Boolean(body.trendingOnly && terms.length === 0)} page=${page} ` +
             `terms=${terms.length} -> ${products.length} rows`,
         );
         return json({ ok: true, products, hasMore: products.length === PAGE_SIZE });
