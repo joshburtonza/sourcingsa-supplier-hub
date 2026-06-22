@@ -7,11 +7,11 @@ and a Shopify store) over one Supabase backend.
 
 | Surface | What it is | Where |
 |---|---|---|
-| **Site** | members log in, browse products, track orders | this repo → Cloudflare Worker **`https://zasupplierhub.josh-338.workers.dev`** |
+| **Site** | members log in, browse products, track orders | **`https://supplier-hub.amalfiai.com`** (Cloudflare Worker; `workers.dev` remains a fallback) |
 | **Store** | product listings + checkout (members pay supplier cost) | Shopify **`byjbdf-2k.myshopify.com`** (ZAR), Yoco payments |
 
 `zasupplierhub.co.za` currently still points at an OLD Lovable build (access-code login) —
-**not** this app. Members must use the worker URL until the GoDaddy DNS is repointed.
+**not** this app. Members must use `supplier-hub.amalfiai.com` until its DNS is repointed.
 
 ## Repo
 

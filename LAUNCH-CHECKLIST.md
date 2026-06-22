@@ -48,7 +48,7 @@ bun run build
 npx wrangler login      # one-time
 npx wrangler deploy
 ```
-Ships to the `*.workers.dev` URL (current `wrangler.jsonc`).
+Ships to `supplier-hub.amalfiai.com`; the `*.workers.dev` URL remains available as a fallback.
 
 ### 5. Custom domain — supplier-hub.amalfiai.com
 `amalfiai.com` is already on Cloudflare, so no DNS migration needed. In `wrangler.jsonc` add:

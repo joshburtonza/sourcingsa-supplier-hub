@@ -4,16 +4,11 @@
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "src/server.ts",
-  // Deploy to the default *.workers.dev subdomain for now. Custom
-  // domain (app.zasupplierhub.co.za or a subdomain of amalfiai.com)
-  // can be bound later — needs the zone added to this CF account
-  // first, which requires either transferring zasupplierhub.co.za
-  // off Shopify or using amalfiai.com as the host.
-  //
-  // Re-enable custom domain binding when ready:
-  //   "routes": [
-  //     { "pattern": "supplier-hub.amalfiai.com", "custom_domain": true }
-  //   ]
+  // Keep workers.dev as a fallback, but use the branded custom hostname for
+  // member links. The zasupplierhub.co.za zone is not in this CF account yet.
+  "routes": [
+    { "pattern": "supplier-hub.amalfiai.com", "custom_domain": true }
+  ],
   //
   // Live URLs after first deploy:
   //   - https://zasupplierhub.<your-cf-subdomain>.workers.dev/

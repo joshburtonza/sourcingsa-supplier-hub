@@ -6,7 +6,7 @@ Turns a Temu product CSV into live, filterable products on the ZA Supplier Hub.
 
 | | What | Where |
 |---|---|---|
-| **Site** | the member app (this repo) | `joshburtonza/sourcingsa-supplier-hub` → Cloudflare Worker `https://zasupplierhub.josh-338.workers.dev`, backend Supabase `vcvvkpzgcscwvmzmdpye` |
+| **Site** | the member app (this repo) | `https://supplier-hub.amalfiai.com` → Cloudflare Worker, backend Supabase `vcvvkpzgcscwvmzmdpye` |
 | **Store** | product listings + checkout | Shopify `byjbdf-2k.myshopify.com` (ZAR), Admin API, Yoco payments |
 
 Members browse on the **site** (products read from Supabase); "Order Now" sends them to a **Shopify** cart permalink to pay supplier cost.

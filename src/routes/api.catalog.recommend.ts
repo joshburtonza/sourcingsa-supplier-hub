@@ -16,7 +16,7 @@ import { callAos, extractJson, AosError } from "@/lib/aos.server";
  *            checkout_url, variant_options, variant_map, hub_url }], count, tier }
  */
 
-const HUB_ORIGIN = "https://zasupplierhub.josh-338.workers.dev";
+const HUB_ORIGIN = "https://supplier-hub.amalfiai.com";
 const TIER_COUNT: Record<string, number> = { starter: 4, growth: 6, elite: 8, owner: 8, payg: 4 };
 const DEFAULT_COUNT = 4;
 
