@@ -165,7 +165,11 @@ export function ProductBrowser({
           </span>
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              setSearch(value);
+              if (value.trim()) setCategory("All");
+            }}
             placeholder="Search products…"
             className="input focus-glow pl-11"
           />
@@ -220,7 +224,9 @@ export function ProductBrowser({
           </button>
         </div>
       ) : products.length === 0 ? (
-        <p className="py-12 text-center text-[color:var(--muted-foreground)]">{emptyMessage}</p>
+        <p className="py-12 text-center text-[color:var(--muted-foreground)]">
+          {debouncedSearch.trim() ? `No products match “${debouncedSearch.trim()}”.` : emptyMessage}
+        </p>
       ) : (
         <>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

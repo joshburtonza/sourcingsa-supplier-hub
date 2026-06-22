@@ -107,12 +107,20 @@ export const Route = createFileRoute("/api/products/search")({
         // "baby" or "mom" incorrectly return empty when that niche has not yet
         // been flagged as trending.
         if (body.trendingOnly && terms.length === 0) query = query.eq("trending", true);
-        if (category && category !== "All") query = query.eq("category", category);
+        // Typed search is always global. A stale category selection must not
+        // suppress a valid direct product/niche search.
+        if (terms.length === 0 && category && category !== "All") query = query.eq("category", category);
         if (terms.length) {
           const clauses = terms
             .map(orSafe)
             .filter(Boolean)
-            .flatMap((term) => [`name.ilike.%${term}%`, `category.ilike.%${term}%`, `description.ilike.%${term}%`]);
+            .flatMap((term) => [
+              `name.ilike.%${term}%`,
+              `category.ilike.%${term}%`,
+              `description.ilike.%${term}%`,
+              `source_query.ilike.%${term}%`,
+              `source_id.ilike.%${term}%`,
+            ]);
           if (clauses.length) query = query.or(clauses.join(","));
         }
         if (price.min > 0) query = query.gte("cost_price", price.min);
