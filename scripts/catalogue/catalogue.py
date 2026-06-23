@@ -177,7 +177,8 @@ def variant_display(options):
 APPAREL_RE = re.compile(
     r"\b(rompers?|bodysuits?|jumpsuits?|onesies?|outfits?|clothing|clothes|"
     r"sweaters?|sweatshirts?|pants set|dresses?|shirts?|shorts?|jackets?|vests?|"
-    r"tracksuits?|overalls)\b",
+    r"tracksuits?|overalls|activewear|sportswear|leggings?|joggers?|hoodies?|"
+    r"sports bras?|bras?|skirts?|tank tops?|crop tops?|compression wear)\b",
     re.I,
 )
 
@@ -196,9 +197,7 @@ def requires_variant_options(name, category, full):
 def inferred_apparel_options(text):
     """Supply usable age bands when Temu blocks the detail-page variant pass."""
     body = dedash(text or "")
-    if re.search(r"\b(?:maternity|women|women's)\b", body, re.I):
-        sizes = ["S", "M", "L", "XL"]
-    elif re.search(r"0\s*-\s*18\s*(?:m|months?)\b", body, re.I):
+    if re.search(r"0\s*-\s*18\s*(?:m|months?)\b", body, re.I):
         sizes = ["0-3M", "3-6M", "6-9M", "9-12M", "12-18M"]
     elif re.search(r"0\s*-\s*12\s*(?:m|months?)\b", body, re.I):
         sizes = ["0-3M", "3-6M", "6-9M", "9-12M"]
@@ -208,6 +207,12 @@ def inferred_apparel_options(text):
         sizes = ["1-2Y", "2-3Y", "3-4Y"]
     elif re.search(r"\b(?:newborn|infant|baby)\b", body, re.I):
         sizes = ["Newborn", "0-3M", "3-6M", "6-9M", "9-12M"]
+    elif re.search(r"\b(?:big\s*&?\s*tall)\b", body, re.I):
+        sizes = ["L", "XL", "2XL", "3XL", "4XL", "5XL"]
+    elif re.search(r"\b(?:curve|shapewear)\b", body, re.I):
+        sizes = ["XL", "2XL", "3XL", "4XL", "5XL"]
+    elif re.search(r"\b(?:maternity|women|women's|men|men's|unisex|adult|fitness|activewear|sportswear|yoga)\b", body, re.I):
+        sizes = ["XS", "S", "M", "L", "XL", "2XL"]
     else:
         sizes = ["2-3Y", "3-4Y", "4-5Y", "5-6Y"]
 
@@ -254,7 +259,7 @@ def stage_normalize(csv_path, category):
         variant_options = variant_options_from(r, col)
         full = fixcaps(dedash((r.get(col["title"]) or "").strip()))
         if requires_variant_options(name, category, full) and not variant_options:
-            variant_options = inferred_apparel_options(full)
+            variant_options = inferred_apparel_options(f"{category} {full}")
         out.append({
             "name": name,
             "full": full,
