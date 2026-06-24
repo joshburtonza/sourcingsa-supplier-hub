@@ -384,13 +384,14 @@ def stage_load():
         checkout = f"https://{STORE}/cart/{c['variant_id']}:1"
         variant_options = esc(json.dumps(options))
         variant_map = esc(json.dumps(c.get("variant_map") or []))
-        vals.append("('%s','%s',%.2f,%.2f,'%s','%s','%s','%s','%s','%s'::jsonb,'%s'::jsonb,'in_stock',true)" % (
+        vals.append("('%s','%s',%.2f,%.2f,'%s','%s','%s','%s','%s','%s','%s'::jsonb,'%s'::jsonb,'in_stock',true)" % (
             esc(r["name"]), esc(r["category"]), cost, sell, img, desc,
-            esc(c["url"]), checkout, esc(r.get("source_id") or ""), variant_options, variant_map))
+            esc(c["url"]), checkout, esc(r.get("source_id") or ""),
+            esc(r.get("source_query") or r.get("category") or ""), variant_options, variant_map))
     if not vals:
         print("load: nothing to insert"); return
     sql = ("insert into public.products (name,category,cost_price,sell_price,image_url,"
-           "description,shopify_url,checkout_url,source_id,variant_options,variant_map,stock_status,active) values\n"
+           "description,shopify_url,checkout_url,source_id,source_query,variant_options,variant_map,stock_status,active) values\n"
            + ",\n".join(vals) + ";")
     mgmt_query(sql)
     print(f"load: inserted {len(vals)} products into the hub")
