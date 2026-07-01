@@ -84,10 +84,22 @@ function LoginPage() {
         },
       });
       if (error) {
-        setErr(error.message ?? "Couldn't send the magic link.");
+        // Supabase returns "Signups not allowed for otp" (code otp_disabled) when
+        // the email has no account here — this is a paid, provisioned-only portal,
+        // so surface a helpful message instead of the raw scary error.
+        const raw = (error.message ?? "").toLowerCase();
+        const noAccount =
+          raw.includes("signups not allowed") ||
+          raw.includes("otp") ||
+          (error as { code?: string }).code === "otp_disabled";
+        setErr(
+          noAccount
+            ? "We couldn’t find an account for that email. Make sure it’s the email you paid with. If you’re a member and it still won’t work, switch to the Password tab and tap “Forgot?” — or use “Create your account” below if you haven’t joined yet."
+            : (error.message ?? "Couldn't send the magic link."),
+        );
         return;
       }
-      setInfo("Magic link sent. Check your inbox.");
+      setInfo("Check your inbox — we’ve sent you a one-tap login link.");
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : "Something went wrong.");
     } finally {
