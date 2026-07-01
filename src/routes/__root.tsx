@@ -7,8 +7,10 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect } from "react";
 
 import appCss from "../styles.css?url";
+import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
   return (
@@ -116,6 +118,27 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
+  // Password-recovery links can land on ANY route — e.g. the site root when the
+  // recovery email link carries no explicit redirect. Supabase parses the token
+  // from the URL and fires PASSWORD_RECOVERY on the auth stream regardless of the
+  // current page, but only /reset-password renders the set-a-new-password form.
+  // Whenever a recovery session appears away from /reset-password, forward the
+  // user there so they actually set a new password instead of being silently
+  // signed in and bounced to /dashboard with their old password unchanged.
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (
+        event === "PASSWORD_RECOVERY" &&
+        typeof window !== "undefined" &&
+        window.location.pathname !== "/reset-password"
+      ) {
+        router.navigate({ to: "/reset-password" });
+      }
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [router]);
 
   return (
     <QueryClientProvider client={queryClient}>
