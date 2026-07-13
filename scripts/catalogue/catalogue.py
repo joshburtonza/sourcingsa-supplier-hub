@@ -161,7 +161,7 @@ def variant_options_from(row, col):
     if colors and len(colors) > 1:
         options.append({"name": "Color", "values": colors[:40]})
     if sizes and len(sizes) > 1:
-        options.append({"name": "Size / Age", "values": sizes[:40]})
+        options.append({"name": "Size or Age", "values": sizes[:40]})
     return options[:3]
 
 
@@ -216,7 +216,7 @@ def inferred_apparel_options(text):
     else:
         sizes = ["2-3Y", "3-4Y", "4-5Y", "5-6Y"]
 
-    options = [{"name": "Size / Age", "values": sizes}]
+    options = [{"name": "Size or Age", "values": sizes}]
     colors = [c for c in KNOWN_COLORS if re.search(rf"\b{re.escape(c)}\b", body, re.I)]
     # Gray and Grey are spelling variants, not separate customer choices.
     if "Gray" in colors and "Grey" in colors:
@@ -285,7 +285,8 @@ def _req(method, path, body, tok):
         except urllib.error.HTTPError as e:
             if e.code == 429:
                 time.sleep(float(e.headers.get("Retry-After", 2)) + 0.5); continue
-            raise
+            detail = e.read().decode("utf-8", errors="replace")
+            raise RuntimeError(f"Shopify {e.code} {path}: {detail}") from e
     raise RuntimeError("too many Shopify retries: " + path)
 
 
