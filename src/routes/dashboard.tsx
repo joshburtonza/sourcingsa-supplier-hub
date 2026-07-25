@@ -5,8 +5,6 @@ import {
   Wallet,
   Truck,
   CheckCircle2,
-  Clock,
-  CalendarDays,
   Search,
   Flame,
   PlusCircle,
@@ -18,6 +16,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { ProtectedShell } from "@/components/ProtectedShell";
 import { useAuth } from "@/hooks/use-auth";
 import { ProductCard, type Product } from "@/components/ProductCard";
+import { KpiCard } from "@/components/dashboard/KpiCard";
+import { SpendChart } from "@/components/dashboard/SpendChart";
+import { ProvinceBreakdown } from "@/components/dashboard/ProvinceBreakdown";
+import { DeliveryRail } from "@/components/dashboard/DeliveryRail";
 import { fmtZAR, shortId, STATUS_META, type OrderStatus } from "@/lib/orders";
 
 export const Route = createFileRoute("/dashboard")({
@@ -42,6 +44,8 @@ type Order = {
   paid: boolean;
   status: OrderStatus;
   ordered_at: string;
+  shipping_province: string | null;
+  shipping_city: string | null;
 };
 
 const CARD_COLS =
@@ -53,7 +57,10 @@ function Dashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [trending, setTrending] = useState<Product[]>([]);
   const [catalogueCount, setCatalogueCount] = useState<number | null>(null);
-  const [membership, setMembership] = useState<{ amount: number | null; paid_at: string | null } | null>(null);
+  const [membership, setMembership] = useState<{
+    amount: number | null;
+    paid_at: string | null;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -62,7 +69,9 @@ function Dashboard() {
       const [ordRes, trendRes, countRes, memberRes] = await Promise.all([
         supabase
           .from("orders")
-          .select("id, product_name, quantity, amount, paid, status, ordered_at")
+          .select(
+            "id, product_name, quantity, amount, paid, status, ordered_at, shipping_province, shipping_city",
+          )
           .order("ordered_at", { ascending: false }),
         supabase
           .from("products")
@@ -71,23 +80,20 @@ function Dashboard() {
           .eq("trending", true)
           .order("sales_count", { ascending: false })
           .limit(6),
-        supabase
-          .from("products")
-          .select("id", { count: "exact", head: true })
-          .eq("active", true),
+        supabase.from("products").select("id", { count: "exact", head: true }).eq("active", true),
         // Own membership row (RLS: select where email = auth.email()).
-        supabase
-          .from("paid_customers")
-          .select("amount, paid_at")
-          .maybeSingle(),
+        supabase.from("paid_customers").select("amount, paid_at").maybeSingle(),
       ]);
       if (ordRes.error) console.error("[dashboard] orders load failed", ordRes.error.message);
       if (trendRes.error) console.error("[dashboard] trending load failed", trendRes.error.message);
-      if (memberRes.error) console.error("[dashboard] membership load failed", memberRes.error.message);
+      if (memberRes.error)
+        console.error("[dashboard] membership load failed", memberRes.error.message);
       setOrders((ordRes.data as Order[]) ?? []);
       setTrending((trendRes.data as Product[]) ?? []);
       setCatalogueCount(countRes.count ?? null);
-      setMembership((memberRes.data as { amount: number | null; paid_at: string | null } | null) ?? null);
+      setMembership(
+        (memberRes.data as { amount: number | null; paid_at: string | null } | null) ?? null,
+      );
       setLoading(false);
     })();
   }, [email]);
@@ -101,8 +107,29 @@ function Dashboard() {
     return { total, spent, transit, delivered, awaiting };
   }, [orders]);
 
+  const activeShipments = useMemo(
+    () => orders.filter((o) => o.status === "processing" || o.status === "in_transit").slice(0, 3),
+    [orders],
+  );
+
+  const leaderboard = useMemo(() => {
+    const byProduct = new Map<string, { spend: number; qty: number }>();
+    for (const o of orders) {
+      const cur = byProduct.get(o.product_name) ?? { spend: 0, qty: 0 };
+      cur.spend += Number(o.amount);
+      cur.qty += o.quantity;
+      byProduct.set(o.product_name, cur);
+    }
+    return Array.from(byProduct.entries())
+      .map(([name, v]) => ({ name, ...v }))
+      .sort((a, b) => b.spend - a.spend)
+      .slice(0, 5);
+  }, [orders]);
+
   const fmtDate = (d?: string | null) =>
-    d ? new Date(d).toLocaleDateString("en-ZA", { year: "numeric", month: "short", day: "numeric" }) : "-";
+    d
+      ? new Date(d).toLocaleDateString("en-ZA", { year: "numeric", month: "short", day: "numeric" })
+      : "-";
   const name = (email ?? "Member").split("@")[0];
   const memberSince = fmtDate(membership?.paid_at ?? user?.created_at ?? null);
   const recent = orders.slice(0, 5);
@@ -110,13 +137,24 @@ function Dashboard() {
   return (
     <div className="space-y-8">
       <section className="relative overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-6 glow-card">
-        <div aria-hidden className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full" style={{ background: "radial-gradient(circle, rgba(107,79,232,0.35) 0%, transparent 70%)" }} />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-10 -top-16 h-48 w-48 rounded-full"
+          style={{
+            background: "radial-gradient(circle, rgba(22,139,248,0.35) 0%, transparent 70%)",
+          }}
+        />
         <h1 className="text-2xl font-bold text-white sm:text-3xl">
           Welcome back, <span className="text-[color:var(--primary)]">{name}</span>
         </h1>
         <p className="mt-1 text-sm text-[color:var(--muted-foreground)]">
           Here&apos;s an overview of your activity.
-          {catalogueCount ? <> · <span className="text-white">{catalogueCount} products</span> ready to sell.</> : null}
+          {catalogueCount ? (
+            <>
+              {" "}
+              · <span className="text-white">{catalogueCount} products</span> ready to sell.
+            </>
+          ) : null}
         </p>
       </section>
 
@@ -126,19 +164,90 @@ function Dashboard() {
             <BadgeCheck className="h-3.5 w-3.5" /> Membership Active
           </span>
           <span className="text-sm text-[color:var(--muted-foreground)]">
-            Supplier Hub access · <span className="font-semibold text-white">{fmtZAR(Number(membership.amount ?? 99))}</span>
-            {membership.paid_at ? <> · paid {fmtDate(membership.paid_at)}</> : null}
+            Supplier Hub access ·{" "}
+            <span className="font-semibold text-white">
+              {fmtZAR(Number(membership.amount ?? 99))} once-off
+            </span>
+            {membership.paid_at ? <> · paid {fmtDate(membership.paid_at)}</> : null} · lifetime
+            access
           </span>
         </section>
       )}
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard icon={<Package />} label="Total Orders" value={stats.total} />
-        <StatCard icon={<Wallet />} label="Total Spent" value={fmtZAR(stats.spent)} />
-        <StatCard icon={<Clock />} label="Awaiting Payment" value={stats.awaiting} />
-        <StatCard icon={<Truck />} label="In Transit" value={stats.transit} />
-        <StatCard icon={<CheckCircle2 />} label="Delivered" value={stats.delivered} />
-        <StatCard icon={<CalendarDays />} label="Member Since" value={memberSince} />
+      <section className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-4">
+        <KpiCard icon={<Package />} label="Total orders" value={stats.total} />
+        <KpiCard icon={<Wallet />} label="Total spent" value={fmtZAR(stats.spent)} />
+        <KpiCard icon={<Truck />} label="In transit" value={stats.transit} />
+        <KpiCard
+          icon={<CheckCircle2 />}
+          label="Delivered"
+          value={stats.delivered}
+          delta={memberSince !== "-" ? `Member since ${memberSince}` : undefined}
+        />
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-5">
+          <SpendChart orders={orders} />
+        </div>
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-5">
+          <h2 className="mb-4 text-sm font-semibold text-white">Active shipments</h2>
+          {activeShipments.length === 0 ? (
+            <p className="py-6 text-center text-sm text-[color:var(--muted-foreground)]">
+              No orders in progress right now.
+            </p>
+          ) : (
+            <div className="grid gap-2.5">
+              {activeShipments.map((o) => (
+                <DeliveryRail
+                  key={o.id}
+                  title={`${shortId(o.id)} · ${o.shipping_city ?? "SA"}`}
+                  subtitle={STATUS_META[o.status].label}
+                  status={o.status}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-5">
+          <h2 className="mb-4 text-sm font-semibold text-white">Where your orders are going</h2>
+          <ProvinceBreakdown orders={orders} />
+        </div>
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)] p-5">
+          <h2 className="mb-4 text-sm font-semibold text-white">Most ordered products</h2>
+          {leaderboard.length === 0 ? (
+            <p className="py-6 text-center text-sm text-[color:var(--muted-foreground)]">
+              No orders yet.
+            </p>
+          ) : (
+            <div className="grid gap-2">
+              {leaderboard.map((p, i) => (
+                <div
+                  key={p.name}
+                  className="grid grid-cols-[20px_1fr_auto] items-center gap-3 rounded-[11px] border border-[color:var(--border)] bg-white/[0.028] px-3 py-2.5"
+                >
+                  <span className="text-center text-xs font-extrabold text-[color:var(--muted-foreground)]">
+                    {i + 1}
+                  </span>
+                  <span className="min-w-0">
+                    <b className="block truncate text-[12.5px] font-semibold text-white">
+                      {p.name}
+                    </b>
+                    <small className="block text-[11px] text-[color:var(--muted-foreground)]">
+                      {p.qty} unit{p.qty > 1 ? "s" : ""}
+                    </small>
+                  </span>
+                  <span className="whitespace-nowrap text-[13px] font-bold tabular-nums text-white">
+                    {fmtZAR(p.spend)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </section>
 
       {trending.length > 0 && (
@@ -147,7 +256,10 @@ function Dashboard() {
             <h2 className="flex items-center gap-2 text-lg font-semibold text-white">
               <Flame className="h-5 w-5 text-[color:var(--primary)]" /> Trending this week
             </h2>
-            <Link to="/trending" className="inline-flex items-center gap-1 text-sm font-medium text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]">
+            <Link
+              to="/trending"
+              className="inline-flex items-center gap-1 text-sm font-medium text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]"
+            >
               View all <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -162,7 +274,12 @@ function Dashboard() {
       <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--card)]">
         <div className="flex items-center justify-between border-b border-[color:var(--border)] px-6 py-4">
           <h2 className="text-lg font-semibold text-white">Recent Orders</h2>
-          <Link to="/orders" className="text-sm font-medium text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]">View all</Link>
+          <Link
+            to="/orders"
+            className="text-sm font-medium text-[color:var(--primary)] hover:text-[color:var(--primary-hover)]"
+          >
+            View all
+          </Link>
         </div>
         {loading ? (
           <div className="grid place-items-center py-12">
@@ -170,8 +287,16 @@ function Dashboard() {
           </div>
         ) : recent.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-sm text-[color:var(--muted-foreground)]">No orders yet. Pick a trending product above or browse the full catalogue to start selling.</p>
-            <Link to="/products" className="mt-4 inline-block rounded-lg bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[color:var(--primary-hover)] glow-btn">Browse the catalogue</Link>
+            <p className="text-sm text-[color:var(--muted-foreground)]">
+              No orders yet. Pick a trending product above or browse the full catalogue to start
+              selling.
+            </p>
+            <Link
+              to="/products"
+              className="mt-4 inline-block rounded-lg bg-[color:var(--primary)] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[color:var(--primary-hover)] glow-btn"
+            >
+              Browse the catalogue
+            </Link>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -190,11 +315,29 @@ function Dashboard() {
                   const meta = STATUS_META[o.status];
                   return (
                     <tr key={o.id} className="border-t border-[color:var(--border)]">
-                      <td className="px-6 py-3 font-mono text-xs text-[color:var(--muted-foreground)]">{shortId(o.id)}</td>
-                      <td className="px-6 py-3 text-white">{o.product_name}{o.quantity > 1 ? <span className="text-[color:var(--muted-foreground)]"> ×{o.quantity}</span> : null}</td>
-                      <td className="px-6 py-3 text-[color:var(--muted-foreground)]">{new Date(o.ordered_at).toLocaleDateString("en-ZA")}</td>
+                      <td className="px-6 py-3 font-mono text-xs text-[color:var(--muted-foreground)]">
+                        {shortId(o.id)}
+                      </td>
+                      <td className="px-6 py-3 text-white">
+                        {o.product_name}
+                        {o.quantity > 1 ? (
+                          <span className="text-[color:var(--muted-foreground)]">
+                            {" "}
+                            ×{o.quantity}
+                          </span>
+                        ) : null}
+                      </td>
+                      <td className="px-6 py-3 text-[color:var(--muted-foreground)]">
+                        {new Date(o.ordered_at).toLocaleDateString("en-ZA")}
+                      </td>
                       <td className="px-6 py-3 text-white">{fmtZAR(Number(o.amount))}</td>
-                      <td className="px-6 py-3"><span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${meta.cls}`}>{meta.label}</span></td>
+                      <td className="px-6 py-3">
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${meta.cls}`}
+                        >
+                          {meta.label}
+                        </span>
+                      </td>
                     </tr>
                   );
                 })}
@@ -217,22 +360,15 @@ function Dashboard() {
   );
 }
 
-function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--card)] p-5 glow-card-hover">
-      <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-[color:var(--primary)]/15 text-[color:var(--primary)]">
-        <span className="[&>svg]:h-5 [&>svg]:w-5">{icon}</span>
-      </div>
-      <div className="text-2xl font-semibold text-white">{value}</div>
-      <div className="mt-1 text-xs uppercase tracking-wider text-[color:var(--muted-foreground)]">{label}</div>
-    </div>
-  );
-}
-
 function QuickLink({ to, icon, label }: { to: string; icon: React.ReactNode; label: string }) {
   return (
-    <Link to={to} className="flex items-center gap-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--card)] p-4 text-sm font-medium text-white transition-colors hover:border-[color:var(--primary)] hover:text-[color:var(--primary)]">
-      <span className="grid h-9 w-9 place-items-center rounded-lg bg-[color:var(--primary)]/15 text-[color:var(--primary)] [&>svg]:h-4 [&>svg]:w-4">{icon}</span>
+    <Link
+      to={to}
+      className="flex items-center gap-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--card)] p-4 text-sm font-medium text-white transition-colors hover:border-[color:var(--primary)] hover:text-[color:var(--primary)]"
+    >
+      <span className="grid h-9 w-9 place-items-center rounded-lg bg-[color:var(--primary)]/15 text-[color:var(--primary)] [&>svg]:h-4 [&>svg]:w-4">
+        {icon}
+      </span>
       {label}
     </Link>
   );
