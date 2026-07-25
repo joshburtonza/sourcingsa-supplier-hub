@@ -10,16 +10,25 @@ const PROVINCES = [
   "Northern Cape",
 ];
 
+const normalize = (s: string) => s.trim().toLowerCase();
+
 export function ProvinceBreakdown({ orders }: { orders: { shipping_province: string | null }[] }) {
-  const counts = new Map<string, number>();
+  const byNormalized = new Map<string, number>();
   for (const o of orders) {
-    const p = o.shipping_province ?? "Unknown";
-    counts.set(p, (counts.get(p) ?? 0) + 1);
+    const key = o.shipping_province ? normalize(o.shipping_province) : "unknown";
+    byNormalized.set(key, (byNormalized.get(key) ?? 0) + 1);
   }
+  const matched = new Set(PROVINCES.map(normalize));
   const total = orders.length || 1;
-  const rows = PROVINCES.map((p) => ({ name: p, count: counts.get(p) ?? 0 }))
-    .filter((r) => r.count > 0)
-    .sort((a, b) => b.count - a.count);
+  const rows = PROVINCES.map((p) => ({
+    name: p,
+    count: byNormalized.get(normalize(p)) ?? 0,
+  })).filter((r) => r.count > 0);
+  const unmatched = Array.from(byNormalized.entries())
+    .filter(([key]) => !matched.has(key))
+    .reduce((sum, [, count]) => sum + count, 0);
+  if (unmatched > 0) rows.push({ name: "Other / unknown", count: unmatched });
+  rows.sort((a, b) => b.count - a.count);
 
   if (rows.length === 0) {
     return (

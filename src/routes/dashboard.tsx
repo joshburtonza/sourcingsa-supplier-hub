@@ -11,6 +11,7 @@ import {
   MessageCircle,
   ArrowRight,
   BadgeCheck,
+  AlertTriangle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ProtectedShell } from "@/components/ProtectedShell";
@@ -62,6 +63,7 @@ function Dashboard() {
     paid_at: string | null;
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [ordersError, setOrdersError] = useState(false);
 
   useEffect(() => {
     if (!email) return;
@@ -86,11 +88,14 @@ function Dashboard() {
       ]);
       if (ordRes.error) console.error("[dashboard] orders load failed", ordRes.error.message);
       if (trendRes.error) console.error("[dashboard] trending load failed", trendRes.error.message);
+      if (countRes.error)
+        console.error("[dashboard] catalogue count failed", countRes.error.message);
       if (memberRes.error)
         console.error("[dashboard] membership load failed", memberRes.error.message);
+      setOrdersError(Boolean(ordRes.error));
       setOrders((ordRes.data as Order[]) ?? []);
       setTrending((trendRes.data as Product[]) ?? []);
-      setCatalogueCount(countRes.count ?? null);
+      setCatalogueCount(countRes.error ? null : (countRes.count ?? null));
       setMembership(
         (memberRes.data as { amount: number | null; paid_at: string | null } | null) ?? null,
       );
@@ -157,6 +162,22 @@ function Dashboard() {
           ) : null}
         </p>
       </section>
+
+      {ordersError && (
+        <section className="flex items-center gap-3 rounded-xl border border-red-500/25 bg-red-500/[0.06] px-5 py-4">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-red-400" />
+          <p className="text-sm text-red-200">
+            Couldn&apos;t load your orders right now — the figures below may be incomplete.{" "}
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="font-semibold underline underline-offset-2"
+            >
+              Try again
+            </button>
+          </p>
+        </section>
+      )}
 
       {!loading && membership && (
         <section className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] px-5 py-4">
