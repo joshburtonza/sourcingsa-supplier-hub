@@ -13,7 +13,7 @@ export function PublicNavbar() {
     <header className="fixed inset-x-0 top-0 z-50" style={{ backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight text-white">
-          <span className="grid h-7 w-7 place-items-center rounded-md bg-[rgba(107,79,232,0.25)] border border-[rgba(107,79,232,0.5)]">
+          <span className="grid h-7 w-7 place-items-center rounded-md bg-[rgba(22,139,248,0.25)] border border-[rgba(22,139,248,0.5)]">
             <Zap className="h-3.5 w-3.5 text-white" />
           </span>
           ZA Supplier Hub
