@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { PublicNavbar } from "@/components/PublicNavbar";
 import { SmoothScroll, Reveal } from "@/components/landing/motion";
+import { Console } from "@/components/landing/Console";
 import { fmtZAR } from "@/lib/orders";
 import { CHECKOUT_URL } from "@/lib/checkout";
 
@@ -52,89 +53,42 @@ function Hero() {
       <div aria-hidden className="dot-grid pointer-events-none absolute inset-0 opacity-50" style={{ maskImage: "radial-gradient(ellipse at center top, black 0%, transparent 70%)" }} />
 
       <div className="relative px-4 pt-28 pb-12 sm:px-6 sm:pt-32 lg:px-8 lg:pt-36">
-        <div className="mx-auto flex max-w-5xl flex-col items-center text-center fade-in-up">
-          <div className="glass-pill-purple inline-flex items-center gap-2 px-4 py-1.5 text-xs">
-            <Lock className="h-3 w-3" />
-            <span>Private supplier portal · South Africa</span>
+        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2 lg:gap-14">
+          <div className="fade-in-up text-center lg:text-left">
+            <div className="glass-pill-purple inline-flex items-center gap-2 px-4 py-1.5 text-xs">
+              <Lock className="h-3 w-3" />
+              <span>Private supplier portal · South Africa</span>
+            </div>
+
+            <h1 className="mt-8 text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
+              Selling products that <span className="text-gradient">never arrive?</span> Fix your fulfilment.
+            </h1>
+
+            <p className="mx-auto mt-6 max-w-xl text-base text-[#A1A1AA] sm:text-lg lg:mx-0">
+              Hand-picked products with real margins, shipped from local SA suppliers to your
+              customer's door in 5–10 days. No stock. No customs. No six-week wait.
+            </p>
+
+            <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
+              <a href={CHECKOUT_URL} target="_blank" rel="noreferrer" className="glass-pill-purple inline-flex items-center gap-2 px-7 py-4 text-base">
+                Get instant access, R99 once-off <ArrowRight className="h-4 w-4" />
+              </a>
+              <a href="#pricing" className="glass-pill inline-flex items-center px-7 py-4 text-base">See pricing</a>
+            </div>
+            <p className="mt-4 text-xs text-[#A1A1AA]">One payment · Lifetime access · No subscriptions</p>
+
+            <div className="mt-8 flex items-center justify-center gap-2 text-sm text-[#A1A1AA] lg:justify-start">
+              <Sparkles className="h-4 w-4 text-[color:var(--primary)]" />
+              Join the founding members getting early access.
+            </div>
           </div>
 
-          <h1 className="mt-8 max-w-4xl text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-            The products behind every winning <span className="text-gradient">SA dropshipping</span> store.
-          </h1>
-
-          <p className="mt-6 max-w-2xl text-base text-[#A1A1AA] sm:text-lg">
-            Stop guessing what to sell and gambling on 6-week shipping. Get hand-picked products
-            with real margins, sourced locally, shipped fast, straight to your South African customers.
-          </p>
-
-          <a href={CHECKOUT_URL} target="_blank" rel="noreferrer" className="glass-pill-purple mt-10 inline-flex items-center gap-2 px-7 py-4 text-base">
-            Get instant access, R99 once-off <ArrowRight className="h-4 w-4" />
-          </a>
-          <p className="mt-4 text-xs text-[#A1A1AA]">One payment · Lifetime access · No subscriptions</p>
-
-          <div className="mt-8 flex items-center gap-2 text-sm text-[#A1A1AA]">
-            <Sparkles className="h-4 w-4 text-[#7B5EE8]" />
-            Join the founding members getting early access.
-          </div>
+          <Reveal delay={120}>
+            <Console />
+          </Reveal>
         </div>
-
-        <Reveal className="mx-auto mt-16 max-w-4xl" delay={120}>
-          <CataloguePreview />
-        </Reveal>
       </div>
     </section>
-  );
-}
-
-const PREVIEW = [
-  {
-    name: "Water-Gloss Highlight Stick",
-    category: "Makeup",
-    cost: 82,
-    sell: 202,
-    img: "https://cdn.shopify.com/s/files/1/0999/3332/3581/files/0ca4ea03-a691-459c-bc32-1dd5b19a1386.jpg?v=1780582505",
-  },
-  {
-    name: "Striped Shirt Dress",
-    category: "Women's Dresses",
-    cost: 320,
-    sell: 815,
-    img: "https://cdn.shopify.com/s/files/1/0999/3332/3581/files/d3374083fd2847ac98799e6a5866a085-goods.jpg?v=1780583769",
-  },
-  {
-    name: "Beard & Hair Grooming Brush",
-    category: "Hair Care",
-    cost: 402,
-    sell: 1022,
-    img: "https://cdn.shopify.com/s/files/1/0999/3332/3581/files/694d7f2f-890d-4941-8f39-570d55effd68.jpg?v=1780583700",
-  },
-];
-
-function CataloguePreview() {
-  return (
-    <div className="glass p-5 sm:p-6">
-      <div className="flex items-center justify-between pb-4">
-        <div className="text-sm font-semibold text-white">A peek at the catalogue</div>
-        <div className="text-xs text-[#A1A1AA]">cost → suggested sell</div>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-3">
-        {PREVIEW.map((p) => {
-          const profit = p.sell - p.cost;
-          const margin = Math.round((profit / p.sell) * 100);
-          return (
-            <div key={p.name} className="rounded-xl border border-white/8 bg-white/[0.03] p-4 text-left">
-              <div className="aspect-[4/3] overflow-hidden rounded-lg bg-white">
-                <img src={p.img} alt={p.name} loading="lazy" className="h-full w-full object-cover" />
-              </div>
-              <div className="mt-3 text-sm font-semibold text-white">{p.name}</div>
-              <div className="text-[11px] uppercase tracking-wider text-[#7B5EE8]">{p.category}</div>
-              <div className="mt-2 text-sm text-white">{fmtZAR(p.cost)} <span className="text-[#A1A1AA]">→ {fmtZAR(p.sell)}</span></div>
-              <div className="mt-1 inline-flex rounded-md bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-300">{fmtZAR(profit)} profit · {margin}%</div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
   );
 }
 
@@ -144,7 +98,7 @@ function TrustStrip() {
     <div className="border-y border-white/8 bg-white/[0.02]">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-10 gap-y-3 px-4 py-5 text-sm text-[#A1A1AA] sm:px-6">
         {items.map((t) => (
-          <span key={t} className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-[#7B5EE8]" strokeWidth={3} />{t}</span>
+          <span key={t} className="inline-flex items-center gap-2"><Check className="h-4 w-4 text-[#168bf8]" strokeWidth={3} />{t}</span>
         ))}
       </div>
     </div>
@@ -171,7 +125,7 @@ function HowItWorks() {
               <div className="glass h-full p-6 md:p-8">
                 <div className="flex items-center gap-3">
                   <span className="grid h-11 w-11 place-items-center rounded-xl bg-[color:var(--primary)]/15 text-[color:var(--primary)]"><s.icon className="h-5 w-5" /></span>
-                  <span className="text-sm font-bold text-[#7B5EE8]">0{i + 1}</span>
+                  <span className="text-sm font-bold text-[#168bf8]">0{i + 1}</span>
                 </div>
                 <h3 className="mt-5 text-xl font-bold text-white">{s.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-[#A1A1AA]">{s.body}</p>
@@ -233,7 +187,7 @@ function FeatureBlock({ eyebrow, title, description, bullets }: { eyebrow: strin
       <p className="mt-4 text-sm leading-relaxed text-[#A1A1AA] sm:text-base">{description}</p>
       <ul className="mt-6 grid gap-2.5 sm:grid-cols-2">
         {bullets.map((b) => (
-          <li key={b} className="flex items-center gap-2 text-sm text-white"><Check className="h-4 w-4 text-[#7B5EE8]" strokeWidth={3} />{b}</li>
+          <li key={b} className="flex items-center gap-2 text-sm text-white"><Check className="h-4 w-4 text-[#168bf8]" strokeWidth={3} />{b}</li>
         ))}
       </ul>
     </div>
@@ -283,12 +237,12 @@ function SalesOverviewMock() {
         <svg viewBox="0 0 300 90" preserveAspectRatio="none" className="mt-3 h-24 w-full">
           <defs>
             <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#7B5EE8" stopOpacity="0.45" />
-              <stop offset="100%" stopColor="#7B5EE8" stopOpacity="0" />
+              <stop offset="0%" stopColor="#168bf8" stopOpacity="0.45" />
+              <stop offset="100%" stopColor="#168bf8" stopOpacity="0" />
             </linearGradient>
           </defs>
           <path d="M0,78 C40,74 60,66 90,60 C120,54 140,40 175,33 C210,26 240,16 300,8 L300,90 L0,90 Z" fill="url(#rev)" />
-          <path d="M0,78 C40,74 60,66 90,60 C120,54 140,40 175,33 C210,26 240,16 300,8" fill="none" stroke="#7B5EE8" strokeWidth="2.5" strokeLinecap="round" />
+          <path d="M0,78 C40,74 60,66 90,60 C120,54 140,40 175,33 C210,26 240,16 300,8" fill="none" stroke="#168bf8" strokeWidth="2.5" strokeLinecap="round" />
         </svg>
       </div>
     </div>
@@ -345,7 +299,7 @@ function ValueProps() {
         {VALUES.map((v, i) => (
           <Reveal key={v.label} delay={i * 70}>
             <div className="glass flex h-full flex-col p-6">
-              <v.icon className="h-5 w-5 text-[#7B5EE8]" />
+              <v.icon className="h-5 w-5 text-[#168bf8]" />
               <div className="mt-4 text-3xl font-bold tracking-tight text-white">{v.value}</div>
               <p className="mt-2 text-sm leading-relaxed text-[#A1A1AA]">{v.label}</p>
             </div>
@@ -375,8 +329,8 @@ function Pricing() {
           <h2 className="mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl">One plan. Everything included.</h2>
         </Reveal>
         <Reveal delay={100}>
-          <div className="glass mt-10 p-8" style={{ border: "1px solid rgba(107,79,232,0.5)", boxShadow: "0 0 40px rgba(107,79,232,0.2)" }}>
-            <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#7B5EE8]">Member access</div>
+          <div className="glass mt-10 p-8" style={{ border: "1px solid rgba(22,139,248,0.5)", boxShadow: "0 0 40px rgba(22,139,248,0.2)" }}>
+            <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#168bf8]">Member access</div>
             <div className="mt-3 flex items-baseline gap-1">
               <span className="text-5xl font-bold tracking-tight text-white">R99</span>
               <span className="text-sm text-[#A1A1AA]">once-off</span>
@@ -385,7 +339,7 @@ function Pricing() {
             <ul className="mt-8 space-y-3.5">
               {features.map((f) => (
                 <li key={f} className="flex items-start gap-3">
-                  <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[rgba(107,79,232,0.2)] text-[#7B5EE8]"><Check className="h-3 w-3" strokeWidth={3} /></span>
+                  <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[rgba(22,139,248,0.2)] text-[#168bf8]"><Check className="h-3 w-3" strokeWidth={3} /></span>
                   <span className="text-sm text-white">{f}</span>
                 </li>
               ))}
@@ -420,7 +374,7 @@ function FAQ() {
               <details className="group glass overflow-hidden px-5 py-1">
                 <summary className="flex cursor-pointer list-none items-center justify-between py-4 text-left font-medium text-white">
                   {f.q}
-                  <span className="ml-4 text-[#7B5EE8] transition-transform group-open:rotate-45">+</span>
+                  <span className="ml-4 text-[#168bf8] transition-transform group-open:rotate-45">+</span>
                 </summary>
                 <p className="pb-4 text-sm leading-relaxed text-[#A1A1AA]">{f.a}</p>
               </details>
@@ -435,7 +389,7 @@ function FAQ() {
 function SectionEyebrow({ text }: { text: string }) {
   return (
     <div className="glass-pill inline-flex items-center gap-2 px-3 py-1">
-      <span className="h-1.5 w-1.5 rounded-full bg-[#7B5EE8]" />
+      <span className="h-1.5 w-1.5 rounded-full bg-[#168bf8]" />
       <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#A1A1AA]">{text}</span>
     </div>
   );
